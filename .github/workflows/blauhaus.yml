@@ -20,8 +20,8 @@ jobs:
      - name: Build NuGet Package
        run: |
         dotnet build ./src/Blauhaus.Orleans.sln --configuration Release
-        dotnet pack ./src/Blauhaus.Orleans/Blauhaus.SignalR.Abstractions.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
-        dotnet pack ./src/Blauhaus.Orleans/Blauhaus.SignalR.Server.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
+        dotnet pack ./src/Blauhaus.SignalR.Abstractions/Blauhaus.SignalR.Abstractions.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
+        dotnet pack ./src/Blauhaus.SignalR.Server/Blauhaus.SignalR.Server.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
         dotnet pack ./src/Blauhaus.Orleans/Blauhaus.Orleans.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
         dotnet pack ./src/Blauhaus.Orleans.Abstractions/Blauhaus.Orleans.Abstractions.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
         dotnet pack ./src/Blauhaus.Orleans.TestHelpers/Blauhaus.Orleans.TestHelpers.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 

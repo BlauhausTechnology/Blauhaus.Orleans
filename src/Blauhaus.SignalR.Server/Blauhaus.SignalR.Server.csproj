@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+    <ItemGroup>
+	    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.10.6" />
+	    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="0.14.4" />
+	    <PackageReference Include="Blauhaus.Ioc.Abstractions" Version="1.2.4" />
+	    <PackageReference Include="Blauhaus.Responses" Version="0.3.2" />
+	    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.6.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Blauhaus.SignalR.Abstractions\Blauhaus.SignalR.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

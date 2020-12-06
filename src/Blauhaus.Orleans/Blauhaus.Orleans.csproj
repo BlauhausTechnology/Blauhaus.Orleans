@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+	  <LangVersion>9</LangVersion>	
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.3.6" />
+    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="0.14.4" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.6.1" />
+    <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.3.6" />
+    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.10.6" />
+    <PackageReference Include="Microsoft.Orleans.Core" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj" />
+    <ProjectReference Include="..\Blauhaus.SignalR.Server\Blauhaus.SignalR.Server.csproj" />
+  </ItemGroup>
+
+</Project>

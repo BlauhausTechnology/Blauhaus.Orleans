@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,7 +6,16 @@
     
 	<ItemGroup>
 		<PackageReference Include="OrleansTestKit" Version="3.1.3" />
-		<PackageReference Include="Blauhaus.Domain.TestHelpers.EFCore" Version="0.13.5" /> 
+		<PackageReference Include="Blauhaus.Domain.TestHelpers.EFCore" Version="0.14.4" /> 
+	</ItemGroup>
+    
+	<ItemGroup>
+	  <Folder Include="MockBuilders\" />
+	</ItemGroup>
+    
+	<ItemGroup>
+	  <ProjectReference Include="..\Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj" />
+	  <ProjectReference Include="..\Blauhaus.SignalR.Abstractions\Blauhaus.SignalR.Abstractions.csproj" />
 	</ItemGroup>
 
 

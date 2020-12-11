@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.10.8" />
-    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.0.5" />
+    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.0.9" />
   </ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
     public abstract class BaseGrainTest<TSut, TId> : BaseServiceTest<TSut> where TSut : Grain
     {
-        protected TestKitSilo _testSilo;
+        protected TestKitSilo TestSilo;
 
         protected TId GrainId;
         
@@ -19,7 +19,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected void AddSiloService<T>(T service) where T : class
         {
-            _testSilo.ServiceProvider.AddService(service);
+            TestSilo.ServiceProvider.AddService(service);
         }
         
 
@@ -30,12 +30,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected Mock<T> AddMockGrain<T>(string grainKey) where T : class, IGrainWithStringKey
         {
-            return _testSilo.AddProbe<T>(grainKey);
+            return TestSilo.AddProbe<T>(grainKey);
         }
         
         protected override TSut ConstructSut()
         {
-            return _testSilo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
+            return TestSilo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
         }
     }
 }

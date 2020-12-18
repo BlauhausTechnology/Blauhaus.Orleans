@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30709.64
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blauhaus.Orleans.Abstractions", "Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj", "{9524D6C4-A416-41A8-9454-99BE51612DF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blauhaus.Orleans.Abstractions", "Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj", "{9524D6C4-A416-41A8-9454-99BE51612DF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blauhaus.Orleans.TestHelpers", "Blauhaus.Orleans.TestHelpers\Blauhaus.Orleans.TestHelpers.csproj", "{84D9D885-587D-4E08-A5E9-AE38B3B96B95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blauhaus.Orleans.TestHelpers", "Blauhaus.Orleans.TestHelpers\Blauhaus.Orleans.TestHelpers.csproj", "{84D9D885-587D-4E08-A5E9-AE38B3B96B95}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{29555C7A-D8F9-4AE3-94E3-5E38BF40D57E}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\blauhaus.yml = ..\.github\workflows\blauhaus.yml
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blauhaus.Orleans", "Blauhaus.Orleans\Blauhaus.Orleans.csproj", "{EB5DFAB4-A2D1-40D3-9F50-C5FD94613F49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +28,10 @@ Global
 		{84D9D885-587D-4E08-A5E9-AE38B3B96B95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84D9D885-587D-4E08-A5E9-AE38B3B96B95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84D9D885-587D-4E08-A5E9-AE38B3B96B95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB5DFAB4-A2D1-40D3-9F50-C5FD94613F49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB5DFAB4-A2D1-40D3-9F50-C5FD94613F49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB5DFAB4-A2D1-40D3-9F50-C5FD94613F49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB5DFAB4-A2D1-40D3-9F50-C5FD94613F49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

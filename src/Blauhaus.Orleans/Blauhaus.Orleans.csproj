@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Blauhaus.SignalR\src\Blauhaus.SignalR.Server\Blauhaus.SignalR.Server.csproj" />
     <ProjectReference Include="..\Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj" />
   </ItemGroup>
 

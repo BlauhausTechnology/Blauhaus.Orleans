@@ -8,11 +8,14 @@
   <ItemGroup>
     <Compile Include=".Config\OrleansConfiguration.cs" />
     <Compile Include=".Config\IOrleansConfig.cs" />
+    <Compile Include=".Ioc\HostBuilderExtensions.cs" />
     <Compile Include=".Ioc\ServiceCollectionExtensions.cs" />
+    <Compile Include=".Ioc\SiloBuilderExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Blauhaus.Auth.Common" Version="0.11.2" />
+    <PackageReference Include="Blauhaus.Common.ValueObjects" Version="1.8.13" />
     <PackageReference Include="Blauhaus.SignalR.Server" Version="0.4.4" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.7.0" />
     <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.4.6" />
@@ -20,6 +23,9 @@
     <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="3.4.0" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="3.4.0" />
     <PackageReference Include="Microsoft.Orleans.Client" Version="3.4.0" /> 
+    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Linux" Version="3.4.0" /> 
+    <PackageReference Include="OrleansDashboard" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Orleans.Hosting.Kubernetes" Version="3.3.0-rc2" /> 
   </ItemGroup>
 
   <ItemGroup>

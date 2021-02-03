@@ -1,17 +1,30 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Blauhaus.Common.ValueObjects.BuildConfigs;
+using Microsoft.Extensions.Configuration;
 
 namespace Blauhaus.Orleans.Config
 {
     public abstract class OrleansConfiguration : IOrleansConfig
     {
-        protected OrleansConfiguration(string azureAzureStorageConnectionString, string clusterName)
+        protected OrleansConfiguration(
+            string azureAzureStorageConnectionString, 
+            string clusterName, 
+            IBuildConfig buildConfig, 
+            int dashboardPort)
         {
-            ClusterName = clusterName;
+            BuildConfig = buildConfig;
+            this.DashboardPort = dashboardPort;
             AzureStorageConnectionString = azureAzureStorageConnectionString;
+            StorageTableName = clusterName + "ClusterInfo";
+            ServiceId = clusterName + "Service";
+            ClusterId = clusterName + "Cluster";
         }
 
 
         public string AzureStorageConnectionString { get; }
-        public string ClusterName { get; } 
+        public string StorageTableName { get; }
+        public string ClusterId { get; }
+        public string ServiceId { get; }
+        public IBuildConfig BuildConfig { get; }
+        public int DashboardPort { get; }
     }
 }

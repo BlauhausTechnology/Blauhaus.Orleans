@@ -13,6 +13,7 @@ namespace Blauhaus.Orleans.Ioc
         {
 
             services.TryAddSingleton<IOrleansConfig, TConfig>();
+
             services.AddSingleton<HostedClusterClient>();
             services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<HostedClusterClient>());
             services.AddSingleton<IClusterClient>(sp => sp.GetRequiredService<HostedClusterClient>().Client);

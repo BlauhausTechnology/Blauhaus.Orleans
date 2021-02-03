@@ -22,12 +22,12 @@ namespace Blauhaus.Orleans.ClusterClient
                 .UseAzureStorageClustering(options =>
                 {
                     options.ConnectionString = clusterConfig.AzureStorageConnectionString;
-                    options.TableName = $"{clusterConfig.ClusterName}ClusterInfo";
+                    options.TableName = clusterConfig.StorageTableName;
                 })
                 .Configure<ClusterOptions>(options =>
                 {
-                    options.ServiceId = $"{clusterConfig.ClusterName}Service";
-                    options.ClusterId = $"{clusterConfig.ClusterName}Cluster";
+                    options.ServiceId = clusterConfig.ServiceId;
+                    options.ClusterId = clusterConfig.ClusterId;
                 });
 
             if (buildConfig.Equals(BuildConfig.Debug))

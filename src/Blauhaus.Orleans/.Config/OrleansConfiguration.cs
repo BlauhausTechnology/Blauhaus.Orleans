@@ -12,7 +12,7 @@ namespace Blauhaus.Orleans.Config
             int dashboardPort)
         {
             BuildConfig = buildConfig;
-            this.DashboardPort = dashboardPort;
+            DashboardPort = dashboardPort;
             AzureStorageConnectionString = azureAzureStorageConnectionString;
             StorageTableName = clusterName + "ClusterInfo";
             ServiceId = clusterName + "Service";

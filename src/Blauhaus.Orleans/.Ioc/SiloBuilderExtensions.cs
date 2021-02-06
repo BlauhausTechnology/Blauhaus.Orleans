@@ -11,21 +11,7 @@ using Orleans.Statistics;
 namespace Blauhaus.Orleans.Ioc
 {
     public static class SiloBuilderExtensions
-    {
-        public static ISiloBuilder AddOrleansDashboard(this ISiloBuilder siloBuilder, int port)
-        {
-            siloBuilder
-                .UseDashboard(options =>
-                { 
-                    options.Host = "*";
-                    options.Port = port;
-                    options.HostSelf = true;
-                    options.CounterUpdateIntervalMs = 10000;
-                })
-                .UseLinuxEnvironmentStatistics();
-
-            return siloBuilder;
-        }
+    { 
 
         public static ISiloBuilder ConfigureSilo(this ISiloBuilder siloBuilder, IOrleansConfig clusterConfig, Assembly grainAssembly)
         {

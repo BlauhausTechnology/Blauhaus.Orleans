@@ -3,14 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MockBuilders\**" />
+    <EmbeddedResource Remove="MockBuilders\**" />
+    <None Remove="MockBuilders\**" />
+  </ItemGroup>
     
 	<ItemGroup>
 		<PackageReference Include="Blauhaus.TestHelpers" Version="1.1.13" />
 		<PackageReference Include="OrleansTestKit" Version="3.1.4" /> 
-	</ItemGroup>
-    
-	<ItemGroup>
-	  <Folder Include="MockBuilders\" />
 	</ItemGroup>
     
 	<ItemGroup>

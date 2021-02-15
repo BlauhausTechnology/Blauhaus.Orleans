@@ -11,11 +11,10 @@ using Orleans.Concurrency;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseConnectedUserGrain<TDbContext, TEntity, TDto> : BaseEntityGrain<TDbContext, TEntity>, IConnectedUserHandler
+    public abstract class BaseConnectedUserGrain<TDbContext, TEntity> : BaseEntityGrain<TDbContext, TEntity>, IConnectedUserHandler
         where TEntity : class, IServerEntity 
         where TDbContext : DbContext
     {
-        
         
         protected readonly Dictionary<string, IConnectedUser> UserConnections = new();
         

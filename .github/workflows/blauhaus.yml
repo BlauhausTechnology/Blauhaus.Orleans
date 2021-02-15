@@ -21,10 +21,12 @@ jobs:
        run: |
         dotnet build ./src/Blauhaus.Orleans.sln --configuration Release
         dotnet pack ./src/Blauhaus.Orleans/Blauhaus.Orleans.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
+        dotnet pack ./src/Blauhaus.Orleans/Blauhaus.Orleans.EfCore.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
         dotnet pack ./src/Blauhaus.Orleans.Abstractions/Blauhaus.Orleans.Abstractions.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
         dotnet pack ./src/Blauhaus.Orleans.TestHelpers/Blauhaus.Orleans.TestHelpers.csproj -p:PackageVersion=${VERSION_NAME} --no-build --output ./ --configuration Release 
      - name: Deploy NuGet Package
        run:  |
         dotnet nuget push /home/runner/work/Blauhaus.Orleans/Blauhaus.Orleans/Blauhaus.Orleans.${VERSION_NAME}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        dotnet nuget push /home/runner/work/Blauhaus.Orleans/Blauhaus.Orleans/Blauhaus.Orleans.EfCore.${VERSION_NAME}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
         dotnet nuget push /home/runner/work/Blauhaus.Orleans/Blauhaus.Orleans/Blauhaus.Orleans.Abstractions.${VERSION_NAME}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
         dotnet nuget push /home/runner/work/Blauhaus.Orleans/Blauhaus.Orleans/Blauhaus.Orleans.TestHelpers.${VERSION_NAME}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

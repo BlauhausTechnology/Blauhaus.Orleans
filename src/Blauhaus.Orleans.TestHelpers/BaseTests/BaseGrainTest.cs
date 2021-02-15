@@ -50,17 +50,11 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             AddSiloService(MockTimeService.Object);
             AddSiloService(MockAnalyticsService.Object);
 
-            RegisterMocks(Silo.ServiceProvider);
-
             SetupTime = MockTimeService.Reset();
             HandleSetup();
             RunTime = MockTimeService.AddSeconds(122);
         }
-
-        protected virtual void RegisterMocks(TestServiceProvider siloServiceProvider)
-        {
-        }
-        
+         
         protected abstract void HandleSetup();
 
         protected TimeServiceMockBuilder MockTimeService => AddMock<TimeServiceMockBuilder, ITimeService>().Invoke();

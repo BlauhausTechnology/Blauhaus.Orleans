@@ -1,24 +1,21 @@
 ﻿using System;
-using Blauhaus.Orleans.Grains;
 using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseIdGrainTest<TSut> : BaseGrainTest<TSut, Guid> where TSut : BaseIdGrain
+    public abstract class BaseStringGrainTest<TSut> : BaseGrainTest<TSut, string> where TSut : Grain, IGrainWithStringKey
     {
-        
         
         protected override void HandleSetup()
         {
-            GrainId = Guid.NewGuid();
+            GrainId = Guid.NewGuid().ToString();
         }
-
 
         protected override TSut ConstructSut()
         {
             return Silo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
         }
 
-
+        
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseIdGrainTest<TSut> where TSut : BaseDbGrain<TDbContext> where TDbContext : DbContext
+    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGuidGrainTest<TSut> where TSut : BaseDbGrain<TDbContext> where TDbContext : DbContext
     {
         protected sealed override void HandleSetup()
         {

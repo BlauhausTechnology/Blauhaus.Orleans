@@ -48,7 +48,7 @@ namespace Blauhaus.Orleans.Hubs
         }
 
         protected async Task<Response<SyncResponse<TDto>>> HandleSyncRequestForUserAsync<TDto, TGrain>(SyncRequest command, IDictionary<string, string> headers)
-            where TGrain : IGrainWithGuidKey, ISyncRequestHandler<TDto> where TDto : ISyncClientEntity
+            where TGrain : IGrainWithGuidKey, ISyncRequestHandler<TDto> where TDto : IClientEntity
         {
             using (var _ = AnalyticsService.StartRequestOperation(this, $"Sync {typeof(TDto).Name}", headers))
             {

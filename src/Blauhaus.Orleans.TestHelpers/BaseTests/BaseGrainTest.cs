@@ -7,6 +7,8 @@ using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.SignalR.Abstractions.Auth;
 using Blauhaus.SignalR.TestHelpers.MockBuilders;
 using Blauhaus.TestHelpers.BaseTests;
+using Blauhaus.TestHelpers.Builders._Base;
+using Blauhaus.TestHelpers.MockBuilders;
 using Blauhaus.Time.Abstractions;
 using Blauhaus.Time.TestHelpers.MockBuilders;
 using Moq;
@@ -73,6 +75,14 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected void AddMockGrain<T>(Func<IGrainIdentity, IMock<T>> factory) where T : class, IGrain
         {
             Silo.AddProbe<T>(factory);
+        }
+        protected TMockBuilder AddMockGrain<TMock, TMockBuilder>() 
+            where TMock : class, IGrain
+            where TMockBuilder : BaseMockBuilder<TMockBuilder, TMock>, new()
+        {
+            var mockBuilder = new TMockBuilder();
+            Silo.AddProbe(id => mockBuilder.Mock);
+            return mockBuilder;
         }
 
         protected Mock<T> AddMockGrain<T>(string grainKey) where T : class, IGrainWithStringKey

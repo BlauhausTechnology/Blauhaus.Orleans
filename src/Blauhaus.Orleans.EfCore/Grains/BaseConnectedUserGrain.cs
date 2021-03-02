@@ -22,17 +22,17 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
         }
         
-        public Task<TDto> GetDtoAsync()
+        public async Task<TDto> GetDtoAsync()
         {
             if (Entity == null)
             {
                 throw new InvalidOperationException($"Entity {Id} does not exist");
             }
             
-            return Task.FromResult(GetDto(Entity));
+            return await LoadDtoAsync(Entity);
         }
 
-        protected abstract TDto GetDto(TEntity entity);
+        protected abstract Task<TDto> LoadDtoAsync(TEntity entity);
 
     }
     

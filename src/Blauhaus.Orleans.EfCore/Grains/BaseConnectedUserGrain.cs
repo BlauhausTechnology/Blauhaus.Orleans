@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Domain.Abstractions.Entities;
+using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.SignalR.Abstractions.Auth;
 using Blauhaus.SignalR.Abstractions.Server.Handlers;
 using Blauhaus.Time.Abstractions;
@@ -11,6 +12,32 @@ using Orleans.Concurrency;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
+    public abstract class BaseConnectedUserGrain<TDbContext, TEntity, TDto> : BaseConnectedUserGrain<TDbContext, TEntity>, IDtoLoader<TDto>
+        where TDbContext : DbContext 
+        where TEntity : class, IServerEntity
+        where TDto : IClientEntity
+    {
+        
+        protected BaseConnectedUserGrain(Func<TDbContext> dbContextFactory, IAnalyticsService analyticsService, ITimeService timeService) : base(dbContextFactory, analyticsService, timeService)
+        {
+        }
+        
+        public Task<TDto> GetDtoAsync()
+        {
+            if (Entity == null)
+            {
+                throw new InvalidOperationException($"Entity {Id} does not exist");
+            }
+            
+            return Task.FromResult(GetDto(Entity));
+        }
+
+        protected abstract TDto GetDto(TEntity entity);
+
+    }
+    
+    
+    
     public abstract class BaseConnectedUserGrain<TDbContext, TEntity> : BaseEntityGrain<TDbContext, TEntity>, IConnectedUserHandler
         where TEntity : class, IServerEntity 
         where TDbContext : DbContext

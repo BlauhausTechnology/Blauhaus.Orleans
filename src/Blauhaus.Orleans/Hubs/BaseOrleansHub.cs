@@ -18,7 +18,7 @@ using Orleans;
 
 namespace Blauhaus.Orleans.Hubs
 {
-    public abstract class BaseOrleansHub : BaseSignalrHub
+    public abstract class BaseOrleansHub : BaseSignalRHub
     {
         protected readonly IClusterClient ClusterClient;
 

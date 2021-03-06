@@ -84,6 +84,14 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             Silo.AddProbe(id => mockBuilder.Mock);
             return mockBuilder;
         }
+        
+        protected MockBuilder<TMock> AddGrainMockBuilder<TMock>()
+            where TMock : class, IGrain
+        {
+            var mockBuilder = new MockBuilder<TMock>();
+            this.Silo.AddProbe(_ => mockBuilder.Mock as IMock<TMock>);
+            return mockBuilder;
+        }
 
         protected Mock<T> AddMockGrain<T>(string grainKey) where T : class, IGrainWithStringKey
         {

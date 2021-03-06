@@ -15,8 +15,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     {
         protected TEntity ExistingEntity;
 
-        protected override void SetupDbContext(TDbContext 
-            setupContext)
+        protected override void SetupDbContext(TDbContext setupContext)
         {
             var entityBuilder = (TEntityBuilder)Activator.CreateInstance(typeof(TEntityBuilder), SetupTime);
 

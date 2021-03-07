@@ -85,11 +85,11 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             return mockBuilder;
         }
         
-        protected MockBuilder<TMock> AddGrainMockBuilder<TMock>()
+        protected MockBuilder<TMock> AddMockGrain<TMock>()
             where TMock : class, IGrain
         {
             var mockBuilder = new MockBuilder<TMock>();
-            this.Silo.AddProbe(_ => mockBuilder.Mock as IMock<TMock>);
+            Silo.AddProbe(_ => (IMock<TMock>) mockBuilder.Mock);
             return mockBuilder;
         }
 

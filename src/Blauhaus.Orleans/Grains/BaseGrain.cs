@@ -9,6 +9,8 @@ namespace Blauhaus.Orleans.Grains
     {
         protected TGrain GetGrain<TGrain>(Guid id) where TGrain : IGrainWithGuidKey => GrainFactory.GetGrain<TGrain>(id);
         protected TGrain GetGrain<TGrain>(string id) where TGrain : IGrainWithStringKey => GrainFactory.GetGrain<TGrain>(id);
+        protected IGrain GetGrain(Type grainInterfaceType, Guid id) => GrainFactory.GetGrain(grainInterfaceType, id);
+        protected IGrain GetGrain(Type grainInterfaceType, string id) => GrainFactory.GetGrain(grainInterfaceType, id);
 
         protected IAsyncStream<T> GeTransientStream<T>(Guid id, string name)
         {

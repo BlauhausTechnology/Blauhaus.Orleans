@@ -6,8 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.11.0" />
-    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.0.12" />
+    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.11.3" />
+    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.4.17" />
+    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Handlers\" />
   </ItemGroup>
 
 </Project>

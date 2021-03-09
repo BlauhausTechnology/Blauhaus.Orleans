@@ -3,18 +3,26 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MockBuilders\**" />
+    <EmbeddedResource Remove="MockBuilders\**" />
+    <None Remove="MockBuilders\**" />
+  </ItemGroup>
     
 	<ItemGroup>
-		<PackageReference Include="Blauhaus.TestHelpers" Version="1.1.11" />
+		<PackageReference Include="Blauhaus.SignalR.TestHelpers" Version="0.4.17" />
+		<PackageReference Include="Blauhaus.TestHelpers" Version="1.1.19" />
+		<PackageReference Include="Blauhaus.Domain.TestHelpers.EFCore" Version="1.1.8" /> 
+		<PackageReference Include="Blauhaus.Time.TestHelpers" Version="0.1.2" />
+		<PackageReference Include="NUnit" Version="3.13.1" />
 		<PackageReference Include="OrleansTestKit" Version="3.1.4" /> 
 	</ItemGroup>
     
 	<ItemGroup>
-	  <Folder Include="MockBuilders\" />
-	</ItemGroup>
-    
-	<ItemGroup>
-	  <ProjectReference Include="..\Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj" /> 
+	  <ProjectReference Include="..\Blauhaus.Orleans.Abstractions\Blauhaus.Orleans.Abstractions.csproj" />
+	  <ProjectReference Include="..\Blauhaus.Orleans.EfCore\Blauhaus.Orleans.EfCore.csproj" />
+	  <ProjectReference Include="..\Blauhaus.Orleans\Blauhaus.Orleans.csproj" /> 
 	</ItemGroup>
 
 

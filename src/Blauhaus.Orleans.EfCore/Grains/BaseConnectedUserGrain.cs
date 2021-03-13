@@ -68,7 +68,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         [OneWay]
         public Task DisconnectUserAsync(IConnectedUser user)
         {
-            if (UserConnections.TryGetValue($"{user.UserId}|{user.CurrentDeviceIdentifier}", out var existingConnection))
+            if (UserConnections.TryGetValue($"{user.UserId}|{user.CurrentDeviceIdentifier}", out _))
             {
                 UserConnections.Remove($"{user.UserId}|{user.CurrentDeviceIdentifier}");
             }

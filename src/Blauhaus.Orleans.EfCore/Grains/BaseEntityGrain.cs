@@ -26,10 +26,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 throw new InvalidOperationException($"Entity {Id} does not exist");
             }
             
-            return Task.FromResult(GetDto(Entity));
+            return GetDtoAsync(Entity);
         }
 
-        protected abstract TDto GetDto(TEntity entity);
+        protected abstract Task<TDto> GetDtoAsync(TEntity entity);
 
     }
     

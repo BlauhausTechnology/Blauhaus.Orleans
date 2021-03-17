@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
+using Blauhaus.Common.Abstractions;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.SignalR.Abstractions.Auth;
@@ -14,7 +15,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
 {
     public abstract class BaseConnectedUserGrain<TDbContext, TEntity, TDto> : BaseConnectedUserGrain<TDbContext, TEntity>, IDtoLoader<TDto>
         where TDbContext : DbContext 
-        where TEntity : class, IServerEntity
+        where TEntity : class, IServerEntity, IHasUserId
         where TDto : IClientEntity
     {
         
@@ -39,7 +40,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
     
     
     public abstract class BaseConnectedUserGrain<TDbContext, TEntity> : BaseEntityGrain<TDbContext, TEntity>, IConnectedUserHandler
-        where TEntity : class, IServerEntity 
+        where TEntity : class, IServerEntity, IHasUserId 
         where TDbContext : DbContext
     {
         
@@ -53,11 +54,23 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
         }
 
+        protected override async Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
+        {
+            await base.LoadDependentEntitiesAsync(dbContext, entity);
+
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, async user => await ConnectUserAsync(user));
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected, async user => await DisconnectUserAsync(user));
+        }
+
         [OneWay]
         public Task ConnectUserAsync(IConnectedUser user)
-        { 
-            UserConnections[$"{user.UserId}|{user.CurrentDeviceIdentifier}"] = user;
-            return HandleConnectedUserAsync(user);
+        {
+            if (UserConnections.TryGetValue(user.UniqueId, out _))
+            {
+                UserConnections[user.UniqueId] = user;
+                return HandleConnectedUserAsync(user);
+            }
+            return Task.CompletedTask;
         }
 
         protected virtual Task HandleConnectedUserAsync(IConnectedUser user)
@@ -68,11 +81,12 @@ namespace Blauhaus.Orleans.EfCore.Grains
         [OneWay]
         public Task DisconnectUserAsync(IConnectedUser user)
         {
-            if (UserConnections.TryGetValue($"{user.UserId}|{user.CurrentDeviceIdentifier}", out _))
+            if (UserConnections.TryGetValue(user.UniqueId, out _))
             {
-                UserConnections.Remove($"{user.UserId}|{user.CurrentDeviceIdentifier}");
+                UserConnections.Remove(user.UniqueId);
+                return HandleDisconnectedUserAsync(user);
             }
-            return HandleDisconnectedUserAsync(user);
+            return Task.CompletedTask;
         }
         
         protected virtual Task HandleDisconnectedUserAsync(IConnectedUser user)

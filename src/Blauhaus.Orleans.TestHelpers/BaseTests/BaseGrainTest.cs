@@ -67,35 +67,35 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             Silo.ServiceProvider.AddService(service);
         } 
           
-        protected Mock<T> AddMockGrain<T>(Guid grainKey) where T : class, IGrainWithGuidKey
-        {
-            return Silo.AddProbe<T>(grainKey);
-        }
-
         protected void AddMockGrain<T>(Func<IGrainIdentity, IMock<T>> factory) where T : class, IGrain
         {
             Silo.AddProbe<T>(factory);
         }
-        protected TMockBuilder AddMockGrain<TMock, TMockBuilder>() 
-            where TMock : class, IGrain
-            where TMockBuilder : BaseMockBuilder<TMockBuilder, TMock>, new()
+        protected TMockBuilder AddMockGrain<TGrain, TMockBuilder>() 
+            where TGrain : class, IGrain
+            where TMockBuilder : BaseMockBuilder<TMockBuilder, TGrain>, new()
         {
             var mockBuilder = new TMockBuilder();
             Silo.AddProbe(id => mockBuilder.Mock);
             return mockBuilder;
         }
         
-        protected MockBuilder<TMock> AddMockGrain<TMock>()
-            where TMock : class, IGrain
+        protected MockBuilder<TGrain> AddMockGrain<TGrain>()
+            where TGrain : class, IGrain
         {
-            var mockBuilder = new MockBuilder<TMock>();
-            Silo.AddProbe(_ => (IMock<TMock>) mockBuilder.Mock);
+            var mockBuilder = new MockBuilder<TGrain>();
+            Silo.AddProbe(_ => (IMock<TGrain>) mockBuilder.Mock);
             return mockBuilder;
-        }
-
-        protected Mock<T> AddMockGrain<T>(string grainKey) where T : class, IGrainWithStringKey
+        } 
+        
+        protected Mock<TGrain> AddMockGrain<TGrain>(string grainKey) where TGrain : class, IGrainWithStringKey
         {
-            return Silo.AddProbe<T>(grainKey);
+            return Silo.AddProbe<TGrain>(grainKey);
+        }
+        
+        protected Mock<TGrain> AddMockGrain<TGrain>(Guid grainKey) where TGrain : class, IGrainWithGuidKey
+        {
+            return Silo.AddProbe<TGrain>(grainKey);
         }
 
         protected TestStream<T> AddTestPersistentStream<T>(Guid id, string streamNamespace)

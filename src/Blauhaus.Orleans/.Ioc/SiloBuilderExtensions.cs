@@ -2,6 +2,7 @@
 using System.Net;
 using System.Reflection;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
+using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
 using Orleans;
 using Orleans.Configuration;
@@ -25,7 +26,7 @@ namespace Blauhaus.Orleans.Ioc
                 })
                 .UseLinuxEnvironmentStatistics();
 
-                siloBuilder
+            siloBuilder
                 .UseAzureStorageClustering(options =>
                 {
                     options.ConnectionString = clusterConfig.AzureStorageConnectionString;
@@ -37,6 +38,9 @@ namespace Blauhaus.Orleans.Ioc
                     parts.AddApplicationPart(grainAssembly).WithReferences();
                 });
 
+            siloBuilder
+                .AddSimpleMessageStreamProvider(StreamProvider.Transient)
+                .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);
 
             if (clusterConfig.BuildConfig.Equals(BuildConfig.Debug))
             {

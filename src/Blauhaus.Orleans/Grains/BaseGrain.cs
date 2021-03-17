@@ -13,7 +13,7 @@ namespace Blauhaus.Orleans.Grains
         protected IGrain GetGrain(Type grainInterfaceType, Guid id) => GrainFactory.GetGrain(grainInterfaceType, id);
         protected IGrain GetGrain(Type grainInterfaceType, string id) => GrainFactory.GetGrain(grainInterfaceType, id);
 
-        protected IAsyncStream<T> GeTransientStream<T>(Guid streamId, string streamEventName)
+        protected IAsyncStream<T> GetTransientStream<T>(Guid streamId, string streamEventName)
         {
             var streamProvider = GetStreamProvider(StreamProvider.Transient);
             return streamProvider.GetStream<T>(streamId, streamEventName);
@@ -25,9 +25,15 @@ namespace Blauhaus.Orleans.Grains
             return streamProvider.GetStream<T>(streamId, streamEventName);
         }
 
+        protected async Task PublishToTransientStreamAsync<T>(Guid streamId, string streamEventName, T t)
+        {
+            var stream = GetTransientStream<T>(streamId, streamEventName);
+            await stream.OnNextAsync(t);
+        }
+        
         protected async Task AddOrResumeTransientSubscriptionAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
         {
-            var stream = this.GeTransientStream<T>(streamId, streamEventName);
+            var stream = GetTransientStream<T>(streamId, streamEventName);
             
             var existingHandles = await stream.GetAllSubscriptionHandles();
             if (existingHandles.Count == 0)

@@ -39,7 +39,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
     
     
     
-    public abstract class BaseConnectedUserGrain<TDbContext, TEntity> : BaseEntityGrain<TDbContext, TEntity>, IConnectedUserHandler
+    public abstract class BaseConnectedUserGrain<TDbContext, TEntity> : BaseEntityGrain<TDbContext, TEntity>
         where TEntity : class, IServerEntity, IHasUserId 
         where TDbContext : DbContext
     {
@@ -101,32 +101,32 @@ namespace Blauhaus.Orleans.EfCore.Grains
             await base.OnDeactivateAsync();
         }
 
-        [OneWay]
-        public Task ConnectUserAsync(IConnectedUser user)
-        {
-            if (UserConnections.TryGetValue(user.UniqueId, out _))
-            {
-                UserConnections[user.UniqueId] = user;
-                return HandleConnectedUserAsync(user);
-            }
-            return Task.CompletedTask;
-        }
+        //[OneWay]
+        //public Task ConnectUserAsync(IConnectedUser user)
+        //{
+        //    if (UserConnections.TryGetValue(user.UniqueId, out _))
+        //    {
+        //        UserConnections[user.UniqueId] = user;
+        //        return HandleConnectedUserAsync(user);
+        //    }
+        //    return Task.CompletedTask;
+        //}
 
         protected virtual Task HandleConnectedUserAsync(IConnectedUser user)
         {
             return Task.CompletedTask;
         }
 
-        [OneWay]
-        public Task DisconnectUserAsync(IConnectedUser user)
-        {
-            if (UserConnections.TryGetValue(user.UniqueId, out _))
-            {
-                UserConnections.Remove(user.UniqueId);
-                return HandleDisconnectedUserAsync(user);
-            }
-            return Task.CompletedTask;
-        }
+        //[OneWay]
+        //public Task DisconnectUserAsync(IConnectedUser user)
+        //{
+        //    if (UserConnections.TryGetValue(user.UniqueId, out _))
+        //    {
+        //        UserConnections.Remove(user.UniqueId);
+        //        return HandleDisconnectedUserAsync(user);
+        //    }
+        //    return Task.CompletedTask;
+        //}
         
         protected virtual Task HandleDisconnectedUserAsync(IConnectedUser user)
         {

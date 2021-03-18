@@ -55,7 +55,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
         }
 
-        protected async Task RegisterForUserConnectionEventsAsync(Guid userId)
+        protected async Task RegisterUserConnectionEventsAsync(Guid userId)
         {
             await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(userId, ConnectedUserEvents.UserConnected, user =>
             {
@@ -78,7 +78,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             });
         }
         
-        protected async Task DeregisterForUserConnectionEventsAsync(Guid userId)
+        protected async Task DeregisterUserConnectionEventsAsync(Guid userId)
         {
             await UnsubscribeTransientAsync<IConnectedUser>(userId, ConnectedUserEvents.UserConnected);
             await UnsubscribeTransientAsync<IConnectedUser>(userId, ConnectedUserEvents.UserDisconnected);

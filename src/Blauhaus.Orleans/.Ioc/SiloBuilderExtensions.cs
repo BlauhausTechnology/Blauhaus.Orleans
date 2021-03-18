@@ -39,7 +39,10 @@ namespace Blauhaus.Orleans.Ioc
                 });
 
             siloBuilder
-                .AddSimpleMessageStreamProvider(StreamProvider.Transient)
+                .AddSimpleMessageStreamProvider(StreamProvider.Transient, options =>
+                {
+                    options.FireAndForgetDelivery = true;
+                })
                 .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);
 
             if (clusterConfig.BuildConfig.Equals(BuildConfig.Debug))

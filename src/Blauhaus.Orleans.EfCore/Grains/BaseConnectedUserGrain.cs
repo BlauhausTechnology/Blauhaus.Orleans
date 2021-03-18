@@ -58,11 +58,25 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             await base.LoadDependentEntitiesAsync(dbContext, entity);
 
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, 
-                async user => await ConnectUserAsync(user));
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, user =>
+                {
+                    if (UserConnections.TryGetValue(user.UniqueId, out _))
+                    {
+                        UserConnections[user.UniqueId] = user;
+                        return HandleConnectedUserAsync(user);
+                    }
+                    return Task.CompletedTask;
+                });
             
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected,
-                async user => await DisconnectUserAsync(user));
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected, user => 
+            {
+                if (UserConnections.TryGetValue(user.UniqueId, out _))
+                {
+                    UserConnections.Remove(user.UniqueId);
+                    return HandleDisconnectedUserAsync(user);
+                }
+                return Task.CompletedTask;
+            });
 
             await LoadUserDependentEntitiesAsync(dbContext, entity);
         }

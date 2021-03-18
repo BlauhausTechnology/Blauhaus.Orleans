@@ -26,13 +26,13 @@ namespace Blauhaus.Orleans.Grains
             return streamProvider.GetStream<T>(streamId, streamEventName);
         }
 
-        protected async Task PublishToTransientStreamAsync<T>(Guid streamId, string streamEventName, T t)
+        protected async Task PublishAsync<T>(Guid streamId, string streamEventName, T t)
         {
             var stream = GetTransientStream<T>(streamId, streamEventName);
             await stream.OnNextAsync(t);
         }
         
-        protected async Task AddOrResumeTransientSubscriptionAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
+        protected async Task SubscribeAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
         {
             var stream = GetTransientStream<T>(streamId, streamEventName);
             var existingHandles = await stream.GetAllSubscriptionHandles();
@@ -43,6 +43,31 @@ namespace Blauhaus.Orleans.Grains
                 {
                     await handler.Invoke(t);
                 });
+            }
+            else
+            {
+                foreach (var streamSubscriptionHandle in existingHandles)
+                {
+                    await streamSubscriptionHandle.ResumeAsync(async (t, token) =>
+                    { 
+                        await handler.Invoke(t);
+                    });
+                }
+            }
+        }
+        
+        protected async Task SubscribeAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler, T initialValue)
+        {
+            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var existingHandles = await stream.GetAllSubscriptionHandles();
+            
+            if (existingHandles.Count == 0)
+            {
+                await stream.SubscribeAsync(async (t, token) =>
+                {
+                    await handler.Invoke(t);
+                });
+                await handler.Invoke(initialValue);
             }
             else
             {

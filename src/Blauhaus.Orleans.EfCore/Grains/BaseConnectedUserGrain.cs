@@ -54,14 +54,24 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
         }
 
-        protected override async Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
+        protected sealed override async Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
         {
             await base.LoadDependentEntitiesAsync(dbContext, entity);
 
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, async user => await ConnectUserAsync(user));
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected, async user => await DisconnectUserAsync(user));
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, 
+                async user => await ConnectUserAsync(user));
+            
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected,
+                async user => await DisconnectUserAsync(user));
+
+            await LoadUserDependentEntitiesAsync(dbContext, entity);
         }
 
+        protected virtual Task LoadUserDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
+        {
+            return Task.CompletedTask;
+        }
+        
         [OneWay]
         public Task ConnectUserAsync(IConnectedUser user)
         {

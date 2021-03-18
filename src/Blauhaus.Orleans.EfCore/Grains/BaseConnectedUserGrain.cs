@@ -60,7 +60,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
 
             await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, user =>
                 {
-                    if (UserConnections.TryGetValue(user.UniqueId, out _))
+                    if (!UserConnections.TryGetValue(user.UniqueId, out _))
                     {
                         UserConnections[user.UniqueId] = user;
                         return HandleConnectedUserAsync(user);

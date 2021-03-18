@@ -34,8 +34,8 @@ namespace Blauhaus.Orleans.Grains
         protected async Task AddOrResumeTransientSubscriptionAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
         {
             var stream = GetTransientStream<T>(streamId, streamEventName);
-            
             var existingHandles = await stream.GetAllSubscriptionHandles();
+            
             if (existingHandles.Count == 0)
             {
                 await stream.SubscribeAsync(async (t, token) =>
@@ -52,6 +52,17 @@ namespace Blauhaus.Orleans.Grains
                         await handler.Invoke(t);
                     });
                 }
+            }
+        }
+
+        protected async Task UnsubscribeTransientAsync<T>(Guid streamId, string streamEventName)
+        {
+            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var existingHandles = await stream.GetAllSubscriptionHandles();
+            
+            foreach (var streamSubscriptionHandle in existingHandles)
+            {
+                await streamSubscriptionHandle.UnsubscribeAsync();
             }
         }
     }

@@ -45,6 +45,8 @@ namespace Blauhaus.Orleans.EfCore.Grains
     {
         
         protected readonly Dictionary<string, IConnectedUser> UserConnections = new();
+
+        protected Guid UserId;
         
         protected BaseConnectedUserGrain(
             Func<TDbContext> dbContextFactory, 
@@ -58,7 +60,9 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             await base.LoadDependentEntitiesAsync(dbContext, entity);
 
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserConnected, user =>
+            UserId = entity.UserId;
+            
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserConnected, user =>
                 {
                     if (!UserConnections.TryGetValue(user.UniqueId, out _))
                     {
@@ -68,7 +72,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                     return Task.CompletedTask;
                 });
             
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(entity.UserId, ConnectedUserEvents.UserDisconnected, user => 
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserDisconnected, user => 
             {
                 if (UserConnections.TryGetValue(user.UniqueId, out _))
                 {
@@ -85,7 +89,18 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return Task.CompletedTask;
         }
-        
+
+        public override async Task OnDeactivateAsync()
+        {
+            if (UserId != Guid.Empty)
+            {
+                await UnsubscribeTransientAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserConnected);
+                await UnsubscribeTransientAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserDisconnected);
+            }
+
+            await base.OnDeactivateAsync();
+        }
+
         [OneWay]
         public Task ConnectUserAsync(IConnectedUser user)
         {

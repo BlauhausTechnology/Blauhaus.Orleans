@@ -46,7 +46,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
         
         protected readonly Dictionary<string, IConnectedUser> UserConnections = new();
 
-        protected Guid UserId;
         
         protected BaseConnectedUserGrain(
             Func<TDbContext> dbContextFactory, 
@@ -56,23 +55,19 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
         }
 
-        protected sealed override async Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
+        protected async Task RegisterForUserConnectionEventsAsync(Guid userId)
         {
-            await base.LoadDependentEntitiesAsync(dbContext, entity);
-
-            UserId = entity.UserId;
-            
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserConnected, user =>
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(userId, ConnectedUserEvents.UserConnected, user =>
+            {
+                if (!UserConnections.TryGetValue(user.UniqueId, out _))
                 {
-                    if (!UserConnections.TryGetValue(user.UniqueId, out _))
-                    {
-                        UserConnections[user.UniqueId] = user;
-                        return HandleConnectedUserAsync(user);
-                    }
-                    return Task.CompletedTask;
-                });
-            
-            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserDisconnected, user => 
+                    UserConnections[user.UniqueId] = user;
+                    return HandleConnectedUserAsync(user);
+                }
+                return Task.CompletedTask;
+            });
+
+            await AddOrResumeTransientSubscriptionAsync<IConnectedUser>(userId, ConnectedUserEvents.UserDisconnected, user =>
             {
                 if (UserConnections.TryGetValue(user.UniqueId, out _))
                 {
@@ -81,53 +76,41 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 }
                 return Task.CompletedTask;
             });
-
-            await LoadUserDependentEntitiesAsync(dbContext, entity);
+        }
+        
+        protected async Task DeregisterForUserConnectionEventsAsync(Guid userId)
+        {
+            await UnsubscribeTransientAsync<IConnectedUser>(userId, ConnectedUserEvents.UserConnected);
+            await UnsubscribeTransientAsync<IConnectedUser>(userId, ConnectedUserEvents.UserDisconnected);
         }
 
-        protected virtual Task LoadUserDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
+        [OneWay]
+        public Task ConnectUserAsync(IConnectedUser user)
         {
+            if (UserConnections.TryGetValue(user.UniqueId, out _))
+            {
+                UserConnections[user.UniqueId] = user;
+                return HandleConnectedUserAsync(user);
+            }
             return Task.CompletedTask;
         }
-
-        public override async Task OnDeactivateAsync()
-        {
-            if (UserId != Guid.Empty)
-            {
-                await UnsubscribeTransientAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserConnected);
-                await UnsubscribeTransientAsync<IConnectedUser>(UserId, ConnectedUserEvents.UserDisconnected);
-            }
-
-            await base.OnDeactivateAsync();
-        }
-
-        //[OneWay]
-        //public Task ConnectUserAsync(IConnectedUser user)
-        //{
-        //    if (UserConnections.TryGetValue(user.UniqueId, out _))
-        //    {
-        //        UserConnections[user.UniqueId] = user;
-        //        return HandleConnectedUserAsync(user);
-        //    }
-        //    return Task.CompletedTask;
-        //}
 
         protected virtual Task HandleConnectedUserAsync(IConnectedUser user)
         {
             return Task.CompletedTask;
         }
 
-        //[OneWay]
-        //public Task DisconnectUserAsync(IConnectedUser user)
-        //{
-        //    if (UserConnections.TryGetValue(user.UniqueId, out _))
-        //    {
-        //        UserConnections.Remove(user.UniqueId);
-        //        return HandleDisconnectedUserAsync(user);
-        //    }
-        //    return Task.CompletedTask;
-        //}
-        
+        [OneWay]
+        public Task DisconnectUserAsync(IConnectedUser user)
+        {
+            if (UserConnections.TryGetValue(user.UniqueId, out _))
+            {
+                UserConnections.Remove(user.UniqueId);
+                return HandleDisconnectedUserAsync(user);
+            }
+            return Task.CompletedTask;
+        }
+
         protected virtual Task HandleDisconnectedUserAsync(IConnectedUser user)
         {
             return Task.CompletedTask;

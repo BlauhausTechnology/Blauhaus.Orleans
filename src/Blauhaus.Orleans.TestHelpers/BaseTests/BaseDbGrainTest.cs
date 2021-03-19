@@ -7,16 +7,18 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
     public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGuidGrainTest<TSut> where TSut : BaseDbGrain<TDbContext> where TDbContext : DbContext
     {
+        private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder;
+        
         protected sealed override void HandleSetup()
         {
             base.HandleSetup();
             
-            var dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
+            _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
-            TDbContext FactoryFunc() => dbContextBuilder.NewContext;
+            TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
             AddSiloService((Func<TDbContext>) FactoryFunc);
 
-            using (var setupContext = dbContextBuilder.NewContext)
+            using (var setupContext = _dbContextBuilder.NewContext)
             {
                 //a different context for test setup
                 SetupDbContext(setupContext);
@@ -24,11 +26,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             }
 
             //and a different one for test assertions
-            PostDbContext = dbContextBuilder.NewContext;
+            PostDbContext = _dbContextBuilder.NewContext;
         }
 
         protected abstract void SetupDbContext(TDbContext setupContext);
         
         protected TDbContext PostDbContext;
+        protected TDbContext GetNewContext() => _dbContextBuilder.NewContext;
     }
 }

@@ -23,7 +23,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             if (Entity == null)
             {
-                throw new InvalidOperationException($"Entity {Id} does not exist");
+                throw new InvalidOperationException($"Cannot GetDto because {typeof(TEntity).Name} with id {Id} does not exist");
             }
             
             return GetDtoAsync(Entity);

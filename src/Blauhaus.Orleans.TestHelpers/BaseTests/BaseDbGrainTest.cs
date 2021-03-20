@@ -35,12 +35,13 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected TDbContext PostDbContext;
 
-        protected void Seed<T>(T entity)
+        protected T Seed<T>(T entity)
         {
             AddtionalSetup(context =>
             {
                 context.Seed(entity);
             });
+            return entity;
         }
         
         protected void AddtionalSetup(Action<TDbContext> setupFunc)

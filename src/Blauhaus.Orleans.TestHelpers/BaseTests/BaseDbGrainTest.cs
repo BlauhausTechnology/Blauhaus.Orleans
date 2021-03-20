@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
+using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
 using Blauhaus.Orleans.EfCore.Grains;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,15 +34,21 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected abstract void SetupDbContext(TDbContext setupContext);
         
         protected TDbContext PostDbContext;
-        protected TDbContext GetNewContext() => _dbContextBuilder.NewContext;
 
-        protected async Task AddtionalSetupAsync(Func<TDbContext, Task> setupFunc)
+        protected void Seed<T>(T entity)
+        {
+            AddtionalSetup(context =>
+            {
+                context.Seed(entity);
+            });
+        }
+        
+        protected void AddtionalSetup(Action<TDbContext> setupFunc)
         {
             using (var dbContext =  _dbContextBuilder.NewContext)
             {
-                await setupFunc.Invoke(dbContext);
-                
-                await dbContext.SaveChangesAsync();
+                setupFunc.Invoke(dbContext);
+                dbContext.SaveChanges();
             }
         }
     }

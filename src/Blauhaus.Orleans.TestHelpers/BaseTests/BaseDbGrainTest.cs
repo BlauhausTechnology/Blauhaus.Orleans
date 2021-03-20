@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
 using Blauhaus.Orleans.EfCore.Grains;
 using Microsoft.EntityFrameworkCore;
@@ -33,5 +34,15 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected TDbContext PostDbContext;
         protected TDbContext GetNewContext() => _dbContextBuilder.NewContext;
+
+        protected async Task AddtionalSetupAsync(Func<TDbContext, Task> setupFunc)
+        {
+            using (var dbContext =  _dbContextBuilder.NewContext)
+            {
+                await setupFunc.Invoke(dbContext);
+                
+                await dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -37,14 +37,14 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
         protected T Seed<T>(T entity)
         {
-            AddtionalSetup(context =>
+            AdditionalSetup(context =>
             {
                 context.Seed(entity);
             });
             return entity;
         }
         
-        protected void AddtionalSetup(Action<TDbContext> setupFunc)
+        protected void AdditionalSetup(Action<TDbContext> setupFunc)
         {
             using (var dbContext =  _dbContextBuilder.NewContext)
             {

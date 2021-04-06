@@ -11,9 +11,9 @@
   </ItemGroup>
     
 	<ItemGroup>
-		<PackageReference Include="Blauhaus.SignalR.TestHelpers" Version="0.5.24" />
+		<PackageReference Include="Blauhaus.SignalR.TestHelpers" Version="0.6.0" />
 		<PackageReference Include="Blauhaus.TestHelpers" Version="1.2.4" />
-		<PackageReference Include="Blauhaus.Domain.TestHelpers.EFCore" Version="1.1.14" /> 
+		<PackageReference Include="Blauhaus.Domain.TestHelpers.EFCore" Version="1.1.15" /> 
 		<PackageReference Include="Blauhaus.Time.TestHelpers" Version="0.1.4" />
 		<PackageReference Include="NUnit" Version="3.13.1" />
 		<PackageReference Include="OrleansTestKit" Version="3.1.4" /> 

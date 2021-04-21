@@ -2,7 +2,9 @@
 using System.Net;
 using System.Reflection;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
+using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
@@ -25,7 +27,7 @@ namespace Blauhaus.Orleans.Ioc
                 })
                 .UseLinuxEnvironmentStatistics();
 
-                siloBuilder
+            siloBuilder
                 .UseAzureStorageClustering(options =>
                 {
                     options.ConnectionString = clusterConfig.AzureStorageConnectionString;
@@ -37,6 +39,12 @@ namespace Blauhaus.Orleans.Ioc
                     parts.AddApplicationPart(grainAssembly).WithReferences();
                 });
 
+            //todo how to switch down log level??
+            //siloBuilder.AddLogging(builder=>builder.SetMinimumLevel(LogLevel.Debug);
+            
+            siloBuilder
+                .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
+                .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);
 
             if (clusterConfig.BuildConfig.Equals(BuildConfig.Debug))
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
-using Blauhaus.TestHelpers.Builders._Base;
+using Blauhaus.TestHelpers.Builders.Base;
 using Moq;
 
 namespace Blauhaus.Orleans.TestHelpers.Extensions

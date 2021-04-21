@@ -7,7 +7,6 @@ using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.SignalR.Abstractions.Auth;
 using Blauhaus.SignalR.TestHelpers.MockBuilders;
 using Blauhaus.TestHelpers.BaseTests;
-using Blauhaus.TestHelpers.Builders._Base;
 using Blauhaus.TestHelpers.MockBuilders;
 using Blauhaus.Time.Abstractions;
 using Blauhaus.Time.TestHelpers.MockBuilders;

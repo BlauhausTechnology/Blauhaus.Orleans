@@ -35,7 +35,7 @@ namespace Blauhaus.Orleans.Extensions
                 throw new InvalidOperationException("Could not find \'Cluster\' section in Configuration");
             }
 
-            List<IConfigurationSection>? configItems = clusterConfigSection.GetChildren().ToList();
+            var configItems = clusterConfigSection.GetChildren().ToList();
             if (configItems == null || configItems.Count == 0)
             {
                 throw new InvalidOperationException("\'Cluster\' section contained no information");

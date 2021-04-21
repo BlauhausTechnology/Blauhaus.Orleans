@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
+using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,7 @@ namespace Blauhaus.Orleans.ClusterClient
         {
             
             var clientBuilder = new ClientBuilder()
+                .AddSimpleMessageStreamProvider(StreamProvider.Transient)
                 .UseAzureStorageClustering(options =>
                 {
                     options.ConnectionString = clusterConfig.AzureStorageConnectionString;

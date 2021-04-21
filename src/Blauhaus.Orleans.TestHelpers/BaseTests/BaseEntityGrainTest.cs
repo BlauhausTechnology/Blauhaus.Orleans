@@ -2,7 +2,7 @@
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
 using Blauhaus.Orleans.EfCore.Grains;
-using Blauhaus.TestHelpers.Builders._Base;
+using Blauhaus.TestHelpers.Builders.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests

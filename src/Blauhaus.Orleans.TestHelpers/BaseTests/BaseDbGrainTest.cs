@@ -17,7 +17,6 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected override void HandleSetup()
         {
-            
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
             TDbContext FactoryFunc() => _dbContextBuilder.NewContext;

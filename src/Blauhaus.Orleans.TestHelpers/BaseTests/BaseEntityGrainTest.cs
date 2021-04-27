@@ -15,16 +15,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     {
         protected TEntity ExistingEntity= null!;
 
-        protected override void HandleSetup()
-        {
-            GrainId = Guid.NewGuid();
-            base.HandleSetup();
-        }
-
         protected override void SetupDbContext(TDbContext setupContext)
         {
-            var entityBuilder = (TEntityBuilder)Activator.CreateInstance(typeof(TEntityBuilder), SetupTime);
+            var entityBuilderObject = Activator.CreateInstance(typeof(TEntityBuilder), SetupTime);
+            if (entityBuilderObject == null) throw new ArgumentNullException();
 
+            var entityBuilder = (TEntityBuilder)entityBuilderObject;
             if (entityBuilder == null) throw new ArgumentNullException();
 
             SetupExistingEntity(entityBuilder);

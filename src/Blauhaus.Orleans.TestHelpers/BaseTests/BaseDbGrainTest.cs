@@ -8,18 +8,7 @@ using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-
-    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseDbGrainTest<TSut, TDbContext, Guid>
-        where TSut : BaseDbGrain<TDbContext>
-        where TDbContext : DbContext
-    {
-        protected sealed override void HandleSetup()
-        {
-            GrainId = Guid.NewGuid();
-            base.HandleSetup();
-        }
-    } 
-
+     
     public abstract class BaseDbGrainTest<TSut, TDbContext, TId> : BaseGrainTest<TSut, TId> 
         where TSut : BaseDbGrain<TDbContext>
         where TDbContext : DbContext

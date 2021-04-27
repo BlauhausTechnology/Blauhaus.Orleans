@@ -70,7 +70,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 Entity = await LoadEntityAsync(context, Id);
                 if (Entity != null)
                 {
-                    await HandleEntitiesLoadedAsync(context, Entity);
+                    await HandleEntityLoadedAsync(context, Entity);
                     await LoadDependentEntitiesAsync(context, Entity);
                 }
             }
@@ -84,12 +84,12 @@ namespace Blauhaus.Orleans.EfCore.Grains
                     x.EntityState != EntityState.Deleted);
         }
 
-        protected virtual Task HandleEntitiesLoadedAsync(TDbContext dbContext, TEntity entity)
+        protected virtual Task HandleEntityLoadedAsync(TDbContext dbContext, TEntity entity)
         {
             return Task.CompletedTask;
         }
 
-        [Obsolete("Use HandleEntitiesLoadedAsync instead")]
+        [Obsolete("Use HandleEntityLoadedAsync instead")]
         protected virtual Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
         {
             return Task.CompletedTask;

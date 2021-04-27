@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseDbGrain<TDbContext> : BaseIdGrain 
+    public abstract class BaseDbGrain<TDbContext> : BaseGrain 
         where TDbContext : DbContext
     {
         protected readonly Func<TDbContext> GetDbContext;

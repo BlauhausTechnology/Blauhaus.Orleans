@@ -11,9 +11,12 @@ namespace Blauhaus.Orleans.Ioc
     public static class ServiceCollectionExtensions
     {
 
-        public static IServiceCollection AddGrainResolver<TResolver>(this IServiceCollection services) where TResolver : class, IGrainResolver
+        public static IServiceCollection AddGrainResolver<TResolver, TResolverImplementation>(this IServiceCollection services)
+            where TResolver : class, IGrainResolver
+            where TResolverImplementation : class, TResolver
         {
-            services.AddScoped<IGrainResolver, TResolver>();
+            services.AddScoped<TResolver, TResolverImplementation>();
+            services.AddScoped<IGrainResolver>(sp => sp.GetRequiredService<TResolverImplementation>());
             return services;
         }
 

@@ -39,7 +39,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
     }
     
     
-    public abstract class BaseEntityGrain<TDbContext, TEntity> : BaseDbGrain<TDbContext> 
+    public abstract class BaseEntityGrain<TDbContext, TEntity> : BaseDbGrain<TDbContext> , IGrainWithGuidKey
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
     {

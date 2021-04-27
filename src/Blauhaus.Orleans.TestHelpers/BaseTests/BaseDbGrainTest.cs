@@ -4,16 +4,18 @@ using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
 using Blauhaus.Orleans.EfCore.Grains;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGuidGrainTest<TSut> where TSut : BaseDbGrain<TDbContext> where TDbContext : DbContext
+    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGrainTest<TSut, Guid> 
+        where TSut : BaseDbGrain<TDbContext>, IGrainWithGuidKey where TDbContext : DbContext
     {
-        private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder;
+        private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         
         protected sealed override void HandleSetup()
         {
-            base.HandleSetup();
+            GrainId = Guid.NewGuid();
             
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
@@ -29,11 +31,16 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
             //and a different one for test assertions
             PostDbContext = _dbContextBuilder.NewContext;
+        } 
+
+        protected override TSut ConstructSut()
+        {
+            return Silo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
         }
 
         protected abstract void SetupDbContext(TDbContext setupContext);
         
-        protected TDbContext PostDbContext;
+        protected TDbContext PostDbContext = null!;
 
         protected T Seed<T>(T entity)
         {

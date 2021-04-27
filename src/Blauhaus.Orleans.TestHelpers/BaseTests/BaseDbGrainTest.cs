@@ -8,15 +8,26 @@ using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGrainTest<TSut, Guid> 
+
+    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseDbGrainTest<TSut, TDbContext, Guid>
+        where TSut : BaseDbGrain<TDbContext>
+        where TDbContext : DbContext
+    {
+        protected sealed override void HandleSetup()
+        {
+            GrainId = Guid.NewGuid();
+            base.HandleSetup();
+        }
+    } 
+
+    public abstract class BaseDbGrainTest<TSut, TDbContext, TId> : BaseGrainTest<TSut, TId> 
         where TSut : BaseDbGrain<TDbContext>
         where TDbContext : DbContext
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         
-        protected sealed override void HandleSetup()
+        protected override void HandleSetup()
         {
-            GrainId = Guid.NewGuid();
             
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 

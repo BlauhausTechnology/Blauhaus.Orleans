@@ -22,7 +22,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             ITimeService timeService) 
                 : base(dbContextFactory, analyticsService, timeService)
         {
-        }
+        } 
         
         public Task<TDto> GetDtoAsync()
         {
@@ -39,7 +39,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
     }
     
     
-    public abstract class BaseEntityGrain<TDbContext, TEntity> : BaseDbGrain<TDbContext> , IGrainWithGuidKey
+    public abstract class BaseEntityGrain<TDbContext, TEntity> : BaseDbGrain<TDbContext>, IGrainWithGuidKey
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
     {
@@ -70,8 +70,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 Entity = await LoadEntityAsync(context, Id);
                 if (Entity != null)
                 {
-                    await HandleEntityLoadedAsync(context, Entity);
-                    await LoadDependentEntitiesAsync(context, Entity);
+                    await HandleEntityLoadedAsync(context, Entity); 
                 }
             }
         }
@@ -88,11 +87,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return Task.CompletedTask;
         }
-
-        [Obsolete("Use HandleEntityLoadedAsync instead")]
-        protected virtual Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
-        {
-            return Task.CompletedTask;
-        }
+         
     }
 }

@@ -17,8 +17,8 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
         protected override void HandleSetup()
         {
-            base.HandleSetup();
             GrainId = Guid.NewGuid();
+            base.HandleSetup();
         }
 
         protected override void SetupDbContext(TDbContext setupContext)

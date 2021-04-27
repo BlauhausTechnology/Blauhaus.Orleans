@@ -9,7 +9,8 @@ using Orleans;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
     public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGrainTest<TSut, Guid> 
-        where TSut : BaseDbGrain<TDbContext>, IGrainWithGuidKey where TDbContext : DbContext
+        where TSut : BaseDbGrain<TDbContext>
+        where TDbContext : DbContext
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         
@@ -33,10 +34,6 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             PostDbContext = _dbContextBuilder.NewContext;
         } 
 
-        protected override TSut ConstructSut()
-        {
-            return Silo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
-        }
 
         protected abstract void SetupDbContext(TDbContext setupContext);
         

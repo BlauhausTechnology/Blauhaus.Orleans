@@ -13,7 +13,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         where TEntityBuilder : IBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext
     {
-        protected TEntity ExistingEntity;
+        protected TEntity ExistingEntity= null!;
 
         protected override void SetupDbContext(TDbContext setupContext)
         {
@@ -26,6 +26,11 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             var entityToSave = entityBuilder.Object;
             ExistingEntity = setupContext.Seed(entityToSave);
             GrainId = ExistingEntity.Id;
+        }
+        
+        protected override TGrain ConstructSut()
+        {
+            return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
 
         protected virtual void SetupExistingEntity(TEntityBuilder existingEntityBuilder)

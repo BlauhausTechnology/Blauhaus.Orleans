@@ -5,6 +5,7 @@ using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
 using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
@@ -43,6 +44,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         where TEntity : class, IServerEntity
     {
         protected TEntity? Entity;
+        protected Guid Id;
         
         protected BaseEntityGrain(
             Func<TDbContext> dbContextFactory, 
@@ -51,16 +53,24 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 : base(dbContextFactory, analyticsService, timeService)
         {
         }
-        
+         
         public override async Task OnActivateAsync()
         {
             await base.OnActivateAsync();
+
+            Id = this.GetPrimaryKey();
+
+            if (Id == Guid.Empty)
+            {
+                throw new ArgumentException($"Grain requires a GUID id. \"{this.GetPrimaryKey()}\" is not valid");
+            }
 
             await using (var context = GetDbContext())
             {
                 Entity = await LoadEntityAsync(context, Id);
                 if (Entity != null)
                 {
+                    await HandleEntitiesLoadedAsync(context, Entity);
                     await LoadDependentEntitiesAsync(context, Entity);
                 }
             }
@@ -74,6 +84,12 @@ namespace Blauhaus.Orleans.EfCore.Grains
                     x.EntityState != EntityState.Deleted);
         }
 
+        protected virtual Task HandleEntitiesLoadedAsync(TDbContext dbContext, TEntity entity)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Obsolete("Use HandleEntitiesLoadedAsync instead")]
         protected virtual Task LoadDependentEntitiesAsync(TDbContext dbContext, TEntity entity)
         {
             return Task.CompletedTask;

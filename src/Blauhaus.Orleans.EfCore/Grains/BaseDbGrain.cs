@@ -39,6 +39,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return AnalyticsService.TraceErrorResponse<T>(this, error);
         }    
+
         protected Task<Response<T>> TraceErrorTask<T>(Error error)
         {
             return Task.FromResult(TraceError<T>(error));

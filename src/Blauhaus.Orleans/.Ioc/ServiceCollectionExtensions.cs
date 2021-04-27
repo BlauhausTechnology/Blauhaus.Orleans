@@ -1,4 +1,5 @@
-﻿using Blauhaus.Orleans.ClusterClient;
+﻿using Blauhaus.Orleans.Abstractions.Resolver;
+using Blauhaus.Orleans.ClusterClient;
 using Blauhaus.Orleans.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +10,13 @@ namespace Blauhaus.Orleans.Ioc
 {
     public static class ServiceCollectionExtensions
     {
+
+        public static IServiceCollection AddGrainResolver<TResolver>(this IServiceCollection services) where TResolver : class, IGrainResolver
+        {
+            services.AddScoped<IGrainResolver, TResolver>();
+            return services;
+        }
+
         public static IServiceCollection AddOrleansClusterClient<TConfig>(this IServiceCollection services) where TConfig : class, IOrleansConfig
         {
 

@@ -15,7 +15,11 @@ namespace Blauhaus.Orleans.EfCore.Grains
         where TDto : IClientEntity
     {
         
-        protected BaseEntityGrain(Func<TDbContext> dbContextFactory, IAnalyticsService analyticsService, ITimeService timeService) : base(dbContextFactory, analyticsService, timeService)
+        protected BaseEntityGrain(
+            Func<TDbContext> dbContextFactory, 
+            IAnalyticsService analyticsService, 
+            ITimeService timeService) 
+                : base(dbContextFactory, analyticsService, timeService)
         {
         }
         

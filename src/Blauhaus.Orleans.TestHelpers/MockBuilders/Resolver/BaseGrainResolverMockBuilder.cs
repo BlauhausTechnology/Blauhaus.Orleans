@@ -1,4 +1,5 @@
 ﻿using System;
+using Blauhaus.Orleans.Abstractions.Grains;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.TestHelpers.Builders.Base;
 using Blauhaus.TestHelpers.MockBuilders;
@@ -40,6 +41,22 @@ namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
         public TBuilder Where_Resolve_returns<TGrain>(IBuilder<TGrain> grain) where TGrain : IGrainWithGuidKey
         {
             Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(()=> grain.Object);
+            return (TBuilder) this;
+        }
+        
+        public TBuilder Where_ResolveSingleton_returns<TGrain>(TGrain grain) where TGrain : IGrainSingleton
+        {
+            Mock.Setup(x => x.ResolveSingleton<TGrain>()).Returns(grain);
+            return (TBuilder) this;
+        }
+        public TBuilder Where_ResolveSingleton_returns<TGrain>(Func<TGrain> grain) where TGrain : IGrainSingleton
+        {
+            Mock.Setup(x => x.ResolveSingleton<TGrain>()).Returns(grain);
+            return (TBuilder) this;
+        }
+        public TBuilder Where_ResolveSingleton_returns<TGrain>(IBuilder<TGrain> grain) where TGrain : IGrainSingleton
+        {
+            Mock.Setup(x => x.ResolveSingleton<TGrain>()).Returns(()=> grain.Object);
             return (TBuilder) this;
         }
 

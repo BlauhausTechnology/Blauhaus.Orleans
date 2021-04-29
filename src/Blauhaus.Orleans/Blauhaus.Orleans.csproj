@@ -17,7 +17,7 @@
     <PackageReference Include="Blauhaus.Auth.Common" Version="0.11.8" />
     <PackageReference Include="Blauhaus.Common.ValueObjects" Version="1.10.5" />
     <PackageReference Include="Blauhaus.SignalR.Server" Version="0.6.2" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.8.0" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.8.1" />
     <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.6.2" />
     <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.11.8" />
     <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="3.4.2" />

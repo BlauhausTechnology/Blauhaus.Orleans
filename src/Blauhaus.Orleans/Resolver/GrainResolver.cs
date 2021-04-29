@@ -8,7 +8,7 @@ namespace Blauhaus.Orleans.Resolver
     {
         private Func<IGrainFactory>? _grainFactory;
 
-        public TGrain GetGrain<TGrain>(Guid id) where TGrain : IGrainWithGuidKey
+        public TGrain Resolve<TGrain>(Guid id) where TGrain : IGrainWithGuidKey
         {
             if (_grainFactory == null)
             {
@@ -18,7 +18,7 @@ namespace Blauhaus.Orleans.Resolver
             return _grainFactory.Invoke().GetGrain<TGrain>(id);
         }
 
-        public TGrain GetGrain<TGrain>(string id) where TGrain : IGrainWithStringKey
+        public TGrain Resolve<TGrain>(string id) where TGrain : IGrainWithStringKey
         {
             if (_grainFactory == null)
             {
@@ -28,7 +28,7 @@ namespace Blauhaus.Orleans.Resolver
             return _grainFactory.Invoke().GetGrain<TGrain>(id);
         }
 
-        public TGrain GetGrain<TGrain>(long id) where TGrain : IGrainWithIntegerKey
+        public TGrain Resolve<TGrain>(long id) where TGrain : IGrainWithIntegerKey
         {
             if (_grainFactory == null)
             {

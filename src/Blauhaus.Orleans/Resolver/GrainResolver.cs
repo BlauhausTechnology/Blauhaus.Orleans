@@ -10,7 +10,7 @@ namespace Blauhaus.Orleans.Resolver
         private Func<IGrainFactory>? _grainFactory;
 
 
-        public TGrain Resolve<TGrain>() where TGrain : IGrainSingleton
+        public TGrain ResolveSingleton<TGrain>() where TGrain : IGrainSingleton
         {
             return GetGrainFactory()
                 .GetGrain<TGrain>(Guid.Empty);

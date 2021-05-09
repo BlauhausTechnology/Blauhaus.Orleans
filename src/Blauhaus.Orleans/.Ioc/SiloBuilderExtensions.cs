@@ -41,7 +41,8 @@ namespace Blauhaus.Orleans.Ioc
 
             //todo how to switch down log level??
             //siloBuilder.AddLogging(builder=>builder.SetMinimumLevel(LogLevel.Debug);
-            
+
+            //todo streams cause kak so abandoning for now
             siloBuilder
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
                 .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);

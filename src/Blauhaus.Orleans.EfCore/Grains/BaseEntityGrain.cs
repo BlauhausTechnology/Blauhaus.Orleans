@@ -26,12 +26,20 @@ namespace Blauhaus.Orleans.EfCore.Grains
         
         public Task<TDto> GetDtoAsync()
         {
-            if (Entity == null)
+            try
             {
-                throw new InvalidOperationException($"Cannot GetDto because {typeof(TEntity).Name} with id {Id} does not exist");
-            }
+                if (Entity == null)
+                {
+                    throw new InvalidOperationException($"Cannot GetDto because {typeof(TEntity).Name} with id {Id} does not exist");
+                }
             
-            return GetDtoAsync(Entity);
+                return GetDtoAsync(Entity);
+            }
+            catch (Exception e)
+            {
+                AnalyticsService.LogException(this, e);
+                throw;
+            }
         }
 
         protected abstract Task<TDto> GetDtoAsync(TEntity entity);
@@ -56,22 +64,30 @@ namespace Blauhaus.Orleans.EfCore.Grains
          
         public override async Task OnActivateAsync()
         {
-            await base.OnActivateAsync();
-
-            Id = this.GetPrimaryKey();
-
-            if (Id == Guid.Empty)
+            try
             {
-                throw new ArgumentException($"Grain requires a GUID id. \"{this.GetPrimaryKey()}\" is not valid");
-            }
+                await base.OnActivateAsync();
 
-            await using (var context = GetDbContext())
-            {
-                Entity = await LoadEntityAsync(context, Id);
-                if (Entity != null)
+                Id = this.GetPrimaryKey();
+
+                if (Id == Guid.Empty)
                 {
-                    await HandleEntityLoadedAsync(context, Entity); 
+                    throw new ArgumentException($"Grain requires a GUID id. \"{this.GetPrimaryKey()}\" is not valid");
                 }
+
+                await using (var context = GetDbContext())
+                {
+                    Entity = await LoadEntityAsync(context, Id);
+                    if (Entity != null)
+                    {
+                        await HandleEntityLoadedAsync(context, Entity); 
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                AnalyticsService.LogException(this, e);
+                throw;
             }
         }
 

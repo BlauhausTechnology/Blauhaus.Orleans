@@ -14,12 +14,14 @@ namespace Blauhaus.Orleans.Config
             BuildConfig = buildConfig;
             DashboardPort = dashboardPort;
             AzureStorageConnectionString = azureAzureStorageConnectionString;
+
+            ClusterName = clusterName;
             StorageTableName = clusterName + "ClusterInfo";
             ServiceId = clusterName + "Service";
             ClusterId = clusterName + "Cluster";
         }
 
-
+        public string ClusterName { get; }
         public string AzureStorageConnectionString { get; }
         public string StorageTableName { get; }
         public string ClusterId { get; }

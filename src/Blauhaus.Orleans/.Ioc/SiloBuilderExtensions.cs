@@ -13,7 +13,50 @@ using Orleans.Statistics;
 namespace Blauhaus.Orleans.Ioc
 {
     public static class SiloBuilderExtensions
-    { 
+    {
+
+        public static ISiloBuilder ConfigureDashboard(this ISiloBuilder siloBuilder, int port)
+        {
+            siloBuilder
+                .UseDashboard(options =>
+                { 
+                    options.Host = "*";
+                    options.Port = port;
+                    options.HostSelf = true;
+                    options.CounterUpdateIntervalMs = 10000;
+                })
+                .UseLinuxEnvironmentStatistics();
+
+            return siloBuilder;
+        } 
+        
+        public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IBuildConfig buildConfig, string storageConnectionString, string clusterName)
+        {
+            siloBuilder              
+                .UseAzureStorageClustering(options =>
+            {
+                options.ConnectionString = storageConnectionString;
+                options.TableName = clusterName + "ClusterInfo";
+            });
+
+            if (buildConfig.Equals(BuildConfig.Debug))
+            {
+                siloBuilder.ConfigureEndpoints(Dns.GetHostName(), 11111, 30000);
+                siloBuilder.Configure<ClusterMembershipOptions>(x => x.ValidateInitialConnectivity = false);
+                siloBuilder.Configure<ClusterOptions>(options =>
+                {
+                    options.ServiceId = clusterName + "Service";
+                    options.ClusterId = clusterName + "Cluster";
+                });
+            }
+            else
+            {
+                siloBuilder.UseKubernetesHosting();
+            }
+
+            return siloBuilder;
+        }
+         
 
         public static ISiloBuilder ConfigureSilo(this ISiloBuilder siloBuilder, IOrleansConfig clusterConfig, Assembly grainAssembly)
         {

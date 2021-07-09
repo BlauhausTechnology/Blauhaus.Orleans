@@ -14,12 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blauhaus.Auth.Common" Version="0.11.11" />
+    <PackageReference Include="Blauhaus.Auth.Common" Version="0.12.0" />
     <PackageReference Include="Blauhaus.Common.ValueObjects" Version="1.11.3" />
-    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.8.0" />
+    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.8.1" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.9.1" />
     <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.6.14" />
-    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.11.11" />
+    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.12.0" />
     <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="3.4.3" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="3.4.3" />
     <PackageReference Include="Microsoft.Orleans.Client" Version="3.4.3" /> 

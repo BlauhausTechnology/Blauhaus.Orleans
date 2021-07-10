@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
+using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.EfCore.Grains;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
@@ -9,9 +10,10 @@ using Orleans;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
      
-    public abstract class BaseDbGrainTest<TSut, TDbContext, TId> : BaseGrainTest<TSut, TId> 
-        where TSut : BaseDbGrain<TDbContext>
+    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGrainTest<TSut, TId> 
+        where TSut : BaseDbGrain<TDbContext, TGrainResolver>
         where TDbContext : DbContext
+        where TGrainResolver : IGrainResolver
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         

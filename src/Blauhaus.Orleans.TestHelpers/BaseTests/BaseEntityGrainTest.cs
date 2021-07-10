@@ -1,17 +1,19 @@
 ﻿using System;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
+using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.EfCore.Grains;
 using Blauhaus.TestHelpers.Builders.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder> : BaseDbGrainTest<TGrain, TDbContext, Guid>
-        where TGrain: BaseEntityGrain<TDbContext, TEntity> 
+    public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver> : BaseDbGrainTest<TGrain, TDbContext, Guid, TGrainResolver>
+        where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver> 
         where TEntity : class, IServerEntity
         where TEntityBuilder : IBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext
+        where TGrainResolver : IGrainResolver
     {
         protected TEntity ExistingEntity= null!;
 

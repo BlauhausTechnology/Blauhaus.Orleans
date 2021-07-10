@@ -8,6 +8,12 @@ namespace Blauhaus.Orleans.Grains
     public abstract class BaseResolverGrain<TGrainResolver> : Grain where TGrainResolver : IGrainResolver
     {
         private readonly TGrainResolver _grainResolver;
+        
+        protected BaseResolverGrain(TGrainResolver grainResolver)
+        {
+            _grainResolver = grainResolver;
+            _grainResolver.Initialize(()=> GrainFactory);
+        }
 
         protected TGrain ResolveSingleton<TGrain>() where TGrain : IGrainSingleton
         {
@@ -26,10 +32,5 @@ namespace Blauhaus.Orleans.Grains
             return _grainResolver.Resolve<TGrain>(id);
         }
 
-        protected BaseResolverGrain(TGrainResolver grainResolver)
-        {
-            _grainResolver = grainResolver;
-            _grainResolver.Initialize(()=> GrainFactory);
-        }
     }
 }

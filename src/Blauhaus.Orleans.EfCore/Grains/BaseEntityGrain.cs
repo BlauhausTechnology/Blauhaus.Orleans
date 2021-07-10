@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
+using Blauhaus.Orleans.Abstractions.Resolver;
+using Blauhaus.Orleans.Resolver;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
@@ -10,17 +12,19 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto> : BaseEntityGrain<TDbContext, TEntity>, IDtoLoader<TDto>
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoLoader<TDto>
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
         where TDto : IClientEntity
+        where TGrainResolver : IGrainResolver
     {
         
         protected BaseEntityGrain(
             Func<TDbContext> dbContextFactory, 
             IAnalyticsService analyticsService, 
-            ITimeService timeService) 
-                : base(dbContextFactory, analyticsService, timeService)
+            ITimeService timeService,
+            TGrainResolver grainResolver) 
+                : base(dbContextFactory, analyticsService, timeService, grainResolver)
         {
         } 
         
@@ -47,9 +51,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
     }
     
     
-    public abstract class BaseEntityGrain<TDbContext, TEntity> : BaseDbGrain<TDbContext>, IGrainWithGuidKey
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
+        where TGrainResolver : IGrainResolver
     {
         protected TEntity? Entity;
         protected Guid Id;
@@ -57,8 +62,9 @@ namespace Blauhaus.Orleans.EfCore.Grains
         protected BaseEntityGrain(
             Func<TDbContext> dbContextFactory, 
             IAnalyticsService analyticsService, 
-            ITimeService timeService) 
-                : base(dbContextFactory, analyticsService, timeService)
+            ITimeService timeService,
+            TGrainResolver grainResolver) 
+                : base(dbContextFactory, analyticsService, timeService, grainResolver)
         {
         }
          

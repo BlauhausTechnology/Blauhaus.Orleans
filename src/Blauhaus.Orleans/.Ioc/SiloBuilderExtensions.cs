@@ -4,6 +4,8 @@ using System.Reflection;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
+using Blauhaus.Orleans.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
@@ -30,12 +32,16 @@ namespace Blauhaus.Orleans.Ioc
             return siloBuilder;
         } 
         
-        public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IBuildConfig buildConfig, string storageConnectionString, string clusterName)
+        public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IConfiguration configuration, string clusterName)
         {
+            
+            var connectionString = configuration.GetConnectionString("AzureStorage");
+            var buildConfig = configuration.ExtractBuildConfig();
+
             siloBuilder              
                 .UseAzureStorageClustering(options =>
             {
-                options.ConnectionString = storageConnectionString;
+                options.ConnectionString = connectionString;
                 options.TableName = clusterName + "ClusterInfo";
             });
 

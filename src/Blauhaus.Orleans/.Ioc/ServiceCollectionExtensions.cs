@@ -2,6 +2,8 @@
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.ClusterClient;
 using Blauhaus.Orleans.Config;
+using Blauhaus.Orleans.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -21,9 +23,12 @@ namespace Blauhaus.Orleans.Ioc
             return services;
         }
 
-        public static IServiceCollection AddOrleansClusterClient(this IServiceCollection services, IBuildConfig buildConfig, string storageConnectionString, string clusterName)
+        public static IServiceCollection AddOrleansClusterClient(this IServiceCollection services, IConfiguration configuration, string clusterName)
         {
-            services.AddSingleton<IOrleansConfig>(x => new ClientConfig(storageConnectionString, clusterName, buildConfig));
+            var connectionString = configuration.GetConnectionString("AzureStorage");
+            var buildConfig = configuration.ExtractBuildConfig();
+
+            services.AddSingleton<IOrleansConfig>(x => new ClientConfig(connectionString, clusterName, buildConfig));
 
             services.AddSingleton<HostedClusterClient>();
             services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<HostedClusterClient>());

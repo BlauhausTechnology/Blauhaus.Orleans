@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include=".Config\OrleansConfiguration.cs" />
     <Compile Include=".Config\IOrleansConfig.cs" />
+    <Compile Include=".Ioc\ClientConfig.cs" />
     <Compile Include=".Ioc\ServiceCollectionExtensions.cs" />
     <Compile Include=".Ioc\SiloBuilderExtensions.cs" />
   </ItemGroup>

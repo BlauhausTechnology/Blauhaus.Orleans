@@ -12,6 +12,7 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
+
     public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoLoader<TDto>
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
@@ -57,6 +58,20 @@ namespace Blauhaus.Orleans.EfCore.Grains
         where TGrainResolver : IGrainResolver
     {
         protected TEntity? Entity;
+
+        protected TEntity LoadedEntity
+        {
+            get
+            {
+                if (Entity == null)
+                {
+                    throw new InvalidOperationException("Entity has not been loaded or does not exist");
+                }
+
+                return Entity;
+            }
+        }
+
         protected Guid Id;
         
         protected BaseEntityGrain(

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
+using AutoMapper.Configuration;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
@@ -11,6 +12,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Statistics;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace Blauhaus.Orleans.Ioc
 {
@@ -30,7 +32,16 @@ namespace Blauhaus.Orleans.Ioc
                 .UseLinuxEnvironmentStatistics();
 
             return siloBuilder;
-        } 
+        }
+
+        public static ISiloBuilder ConfigureTransientStreams(this ISiloBuilder siloBuilder, IConfiguration configuration)
+        {
+            siloBuilder
+                .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
+                .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = configuration.GetConnectionString("AzureStorage"));
+
+            return siloBuilder;
+        }
         
         public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IConfiguration configuration, string clusterName)
         {
@@ -57,7 +68,8 @@ namespace Blauhaus.Orleans.Ioc
             }
             else
             {
-                siloBuilder.UseKubernetesHosting();
+                siloBuilder
+                    .UseKubernetesHosting();
             }
 
             return siloBuilder;

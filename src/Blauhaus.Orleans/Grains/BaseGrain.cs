@@ -6,6 +6,7 @@ using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
+    [Obsolete("Use resolver grain")]
     public abstract class BaseGrain : Grain
     {
         protected TGrain GetGrain<TGrain>(Guid id) where TGrain : IGrainWithGuidKey => GrainFactory.GetGrain<TGrain>(id);

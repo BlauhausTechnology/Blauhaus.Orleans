@@ -39,6 +39,13 @@ namespace Blauhaus.Orleans.Hubs
         {
             return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
         }
+
+        protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, IDictionary<string, string> headers, Guid grainId)
+            where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+        {
+            return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
+        }
          
         protected Task<Response<TDto>> HandleGrainCommandForUserAsync<TDto, TCommand, TGrain>(
             TCommand command, IDictionary<string, string> headers)

@@ -6,6 +6,7 @@ using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
+    [Obsolete("Use resolver grain")]
     public abstract class BaseGrain : Grain
     {
         protected TGrain GetGrain<TGrain>(Guid id) where TGrain : IGrainWithGuidKey => GrainFactory.GetGrain<TGrain>(id);
@@ -31,6 +32,7 @@ namespace Blauhaus.Orleans.Grains
             var stream = GetTransientStream<T>(streamId, streamEventName);
             await stream.OnNextAsync(t);
         }
+        
         
         protected async Task SubscribeAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
         {

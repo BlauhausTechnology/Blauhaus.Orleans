@@ -6,6 +6,7 @@ namespace Blauhaus.Orleans.Config
     {
         string AzureStorageConnectionString { get; }
         string StorageTableName { get; } 
+        string ClusterName { get; } 
         string ClusterId { get; } 
         string ServiceId { get; } 
         IBuildConfig BuildConfig { get; }

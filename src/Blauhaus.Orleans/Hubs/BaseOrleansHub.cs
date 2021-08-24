@@ -13,6 +13,7 @@ using Blauhaus.Responses;
 using Blauhaus.SignalR.Abstractions.Auth;
 using Blauhaus.SignalR.Abstractions.Server.Handlers;
 using Blauhaus.SignalR.Abstractions.Sync;
+using Blauhaus.SignalR.Server.Auth;
 using Blauhaus.SignalR.Server.Hubs;
 using Orleans;
 
@@ -25,9 +26,9 @@ namespace Blauhaus.Orleans.Hubs
         protected BaseOrleansHub(
             IServiceLocator serviceLocator, 
             IAnalyticsService analyticsService, 
-            IAuthenticatedUserFactory authenticatedUserFactory,
+            IConnectedUserFactory connectedUserFactory,
             IClusterClient clusterClient) 
-                : base(serviceLocator, analyticsService, authenticatedUserFactory)
+                : base(serviceLocator, analyticsService, connectedUserFactory)
         {
             ClusterClient = clusterClient;
         }
@@ -37,6 +38,13 @@ namespace Blauhaus.Orleans.Hubs
                 where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
         {
             return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
+        }
+
+        protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, IDictionary<string, string> headers, Guid grainId)
+            where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+        {
+            return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
         }
          
         protected Task<Response<TDto>> HandleGrainCommandForUserAsync<TDto, TCommand, TGrain>(

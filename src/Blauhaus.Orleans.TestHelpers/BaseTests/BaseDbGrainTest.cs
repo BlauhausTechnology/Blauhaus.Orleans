@@ -2,19 +2,23 @@
 using System.Threading.Tasks;
 using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
+using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.EfCore.Grains;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public abstract class BaseDbGrainTest<TSut, TDbContext> : BaseGuidGrainTest<TSut> where TSut : BaseDbGrain<TDbContext> where TDbContext : DbContext
+     
+    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGrainTest<TSut, TId> 
+        where TSut : BaseDbGrain<TDbContext, TGrainResolver>
+        where TDbContext : DbContext
+        where TGrainResolver : IGrainResolver
     {
-        private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder;
+        private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         
-        protected sealed override void HandleSetup()
+        protected override void HandleSetup()
         {
-            base.HandleSetup();
-            
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
             TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
@@ -29,11 +33,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
             //and a different one for test assertions
             PostDbContext = _dbContextBuilder.NewContext;
-        }
+        } 
+
 
         protected abstract void SetupDbContext(TDbContext setupContext);
         
-        protected TDbContext PostDbContext;
+        protected TDbContext PostDbContext = null!;
 
         protected T Seed<T>(T entity)
         {

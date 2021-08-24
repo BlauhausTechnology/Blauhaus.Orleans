@@ -48,8 +48,8 @@ namespace Blauhaus.Orleans.ClusterClient
         {
             await Client.Connect(async x =>
             {
-                Console.WriteLine("Connection failed due to " + x.Message + ". Reconnecting in 5s...");
-                await Task.Delay(5000);
+                Console.WriteLine("Connection failed due to " + x.Message + ". Reconnecting in 10s...");
+                await Task.Delay(10000);
                 return true;
             });
         }

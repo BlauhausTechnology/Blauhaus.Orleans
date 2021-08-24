@@ -70,6 +70,12 @@ namespace Blauhaus.Orleans.Ioc
             {
                 siloBuilder
                     .UseKubernetesHosting();
+
+                siloBuilder.Configure<ClusterOptions>(options =>
+                {
+                    options.ServiceId = clusterName + "Service";
+                    options.ClusterId = clusterName + "Cluster";
+                });
             }
 
             return siloBuilder;
@@ -100,10 +106,6 @@ namespace Blauhaus.Orleans.Ioc
                     parts.AddApplicationPart(grainAssembly).WithReferences();
                 });
 
-            //todo how to switch down log level??
-            //siloBuilder.AddLogging(builder=>builder.SetMinimumLevel(LogLevel.Debug);
-
-            //todo streams cause kak so abandoning for now
             siloBuilder
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
                 .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);

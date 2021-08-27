@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
+using Blauhaus.Domain.Abstractions.DtoHandlers;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.Orleans.Abstractions.Resolver;

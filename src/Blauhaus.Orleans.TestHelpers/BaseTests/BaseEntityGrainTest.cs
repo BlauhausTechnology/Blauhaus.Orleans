@@ -15,7 +15,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
-        protected TEntity ExistingEntity = null!;
+        protected TEntity ExistingEntity => ExistingEntityBuilder.Object;
         protected TEntityBuilder ExistingEntityBuilder = null!;
 
         protected override void SetupDbContext(TDbContext setupContext)
@@ -32,7 +32,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected override TGrain ConstructSut()
         {
-            ExistingEntity = Seed(ExistingEntityBuilder.Object);
+            Seed(ExistingEntityBuilder.Object);
             return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
 

@@ -32,8 +32,14 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected TDbContext PostDbContext = null!;
         protected TDbContext PreTestDbContext = null!;
 
-        protected sealed override TSut ConstructSut()
+        protected virtual void BeforeConstructSut()
         {
+        }
+
+        protected override TSut ConstructSut()
+        {
+            BeforeConstructSut();
+
             PreTestDbContext.SaveChanges();
 
             RunTime = MockTimeService.AddSeconds(122);

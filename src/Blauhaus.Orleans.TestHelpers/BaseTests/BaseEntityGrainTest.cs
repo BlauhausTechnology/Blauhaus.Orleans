@@ -27,9 +27,15 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
              
         }
 
+        protected override void BeforeConstructSut()
+        {
+            base.BeforeConstructSut();
+
+            PreTestDbContext.Set<TEntity>().Add(ExistingEntityBuilder.Object);
+        }
+
         protected override TGrain ConstructGrain()
         {
-            Seed(ExistingEntityBuilder.Object);
             return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
          

@@ -24,21 +24,30 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
             AddSiloService((Func<TDbContext>) FactoryFunc);
 
-            using (var setupContext = _dbContextBuilder.NewContext)
-            {
-                //a different context for test setup
-                SetupDbContext(setupContext);
-                setupContext.SaveChanges();
-            }
+            PreTestDbContext = _dbContextBuilder.NewContext;
+            
+            SetupDbContext(PreTestDbContext);
 
             //and a different one for test assertions
             PostDbContext = _dbContextBuilder.NewContext;
         } 
 
 
-        protected abstract void SetupDbContext(TDbContext setupContext);
+        protected virtual void SetupDbContext(TDbContext setupContext) { }
         
         protected TDbContext PostDbContext = null!;
+        protected TDbContext PreTestDbContext = null!;
+
+        protected override TSut ConstructSut()
+        {
+            PreTestDbContext.SaveChanges();
+
+            var sut = base.ConstructSut();
+
+            PostDbContext = _dbContextBuilder.NewContext;
+
+            return sut;
+        }
 
         protected T Seed<T>(T entity)
         {

@@ -11,29 +11,28 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver> : BaseDbGrainTest<TGrain, TDbContext, Guid, TGrainResolver>
         where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver> 
         where TEntity : class, IServerEntity
-        where TEntityBuilder : IBuilder<TEntityBuilder, TEntity>
+        where TEntityBuilder : class, IBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
-        protected TEntity ExistingEntity= null!;
+        protected TEntity ExistingEntity = null!;
+        protected TEntityBuilder ExistingEntityBuilder = null!;
 
         protected override void SetupDbContext(TDbContext setupContext)
         {
-            var entityBuilderObject = Activator.CreateInstance(typeof(TEntityBuilder), SetupTime);
-            if (entityBuilderObject == null) throw new ArgumentNullException();
+            GrainId = Guid.NewGuid();
 
-            var entityBuilder = (TEntityBuilder)entityBuilderObject;
-            if (entityBuilder == null) throw new ArgumentNullException();
+            ExistingEntityBuilder = (TEntityBuilder) Activator.CreateInstance(typeof(TEntityBuilder), SetupTime)!;
 
-            SetupExistingEntity(entityBuilder);
+            ExistingEntityBuilder.With(x => x.Id, GrainId);
 
-            var entityToSave = entityBuilder.Object;
-            ExistingEntity = setupContext.Seed(entityToSave);
-            GrainId = ExistingEntity.Id;
+            SetupExistingEntity(ExistingEntityBuilder);
+             
         }
         
         protected override TGrain ConstructSut()
         {
+            ExistingEntity = Seed(ExistingEntityBuilder.Object);
             return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
 

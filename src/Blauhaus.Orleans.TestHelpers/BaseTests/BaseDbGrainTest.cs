@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Blauhaus.Domain.Server.Entities;
 using Blauhaus.Domain.TestHelpers.EFCore.DbContextBuilders;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.EfCore.Grains;
+using Blauhaus.TestHelpers.Builders.Base;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
 
@@ -16,7 +19,18 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         where TGrainResolver : IGrainResolver
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
-        
+     
+        private readonly List<Action<TDbContext>> _setupFuncs = new();   
+
+        protected void AddEntityBuilder<T>(params IBuilder<T>[] builders) where T : BaseServerEntity 
+        {
+            foreach (var builder in builders)
+            {
+                _setupFuncs.Add(context=> context.Add(builder.Object));
+            } 
+        }
+
+
         protected sealed override void HandleSetup()
         {
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
@@ -32,13 +46,13 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected TDbContext PostDbContext = null!;
         protected TDbContext PreTestDbContext = null!;
 
-        protected virtual void BeforeConstructSut()
-        {
-        }
-
+       
         protected override TSut ConstructSut()
         {
-            BeforeConstructSut();
+            foreach (var setupFunc in _setupFuncs)
+            {
+                setupFunc.Invoke(PreTestDbContext);
+            }
 
             PreTestDbContext.SaveChanges();
 

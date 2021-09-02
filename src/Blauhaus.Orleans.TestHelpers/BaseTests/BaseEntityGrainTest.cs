@@ -11,32 +11,29 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver> : BaseDbGrainTest<TGrain, TDbContext, Guid, TGrainResolver>
         where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver> 
         where TEntity : class, IServerEntity
-        where TEntityBuilder : IBuilder<TEntityBuilder, TEntity>
+        where TEntityBuilder : BaseReadonlyFixtureBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
-        protected TEntity ExistingEntity = null!;
+        protected TEntity ExistingEntity => ExistingEntityBuilder.Object;
+        protected TEntityBuilder ExistingEntityBuilder = null!;
 
         protected override void SetupDbContext(TDbContext setupContext)
         {
-            var entityBuilderObject = Activator.CreateInstance(typeof(TEntityBuilder), SetupTime);
-            if (entityBuilderObject == null) throw new ArgumentNullException();
-
-            var entityBuilder = (TEntityBuilder)entityBuilderObject;
-            if (entityBuilder == null) throw new ArgumentNullException();
-
-            SetupExistingEntity(entityBuilder);
-
-            var entityToSave = entityBuilder.Object;
-            ExistingEntity = setupContext.Seed(entityToSave);
-            GrainId = ExistingEntity.Id;
+            GrainId = Guid.NewGuid();
+            ExistingEntityBuilder = (TEntityBuilder) Activator.CreateInstance(typeof(TEntityBuilder), SetupTime)!;
+            ExistingEntityBuilder.With(x => x.Id, GrainId);
+            SetupExistingEntity(ExistingEntityBuilder);
+             
         }
-        
-        protected override TGrain ConstructSut()
+
+        protected override TGrain ConstructGrain()
         {
+            Seed(ExistingEntityBuilder.Object);
             return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
-
+         
+        [Obsolete("Use ExistingEntityBuilder instead")]
         protected virtual void SetupExistingEntity(TEntityBuilder existingEntityBuilder)
         {
         }

@@ -17,19 +17,13 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
         
-        protected override void HandleSetup()
+        protected sealed override void HandleSetup()
         {
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
-
             TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
             AddSiloService((Func<TDbContext>) FactoryFunc);
-
             PreTestDbContext = _dbContextBuilder.NewContext;
-            
             SetupDbContext(PreTestDbContext);
-
-            //and a different one for test assertions
-            PostDbContext = _dbContextBuilder.NewContext;
         } 
 
 
@@ -38,16 +32,19 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected TDbContext PostDbContext = null!;
         protected TDbContext PreTestDbContext = null!;
 
-        protected override TSut ConstructSut()
+        protected sealed override TSut ConstructSut()
         {
             PreTestDbContext.SaveChanges();
 
-            var sut = base.ConstructSut();
+            RunTime = MockTimeService.AddSeconds(122);
+            var sut = ConstructGrain();
 
             PostDbContext = _dbContextBuilder.NewContext;
 
             return sut;
         }
+
+        protected abstract TSut ConstructGrain();
 
         protected T Seed<T>(T entity)
         {

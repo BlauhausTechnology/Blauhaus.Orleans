@@ -62,7 +62,6 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected void AddSiloService<T>(T service) where T : class
         {
-            RunTime = MockTimeService.AddSeconds(122);
             Silo.ServiceProvider.AddService(service);
         } 
           

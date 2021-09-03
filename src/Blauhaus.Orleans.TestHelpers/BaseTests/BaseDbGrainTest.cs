@@ -25,10 +25,47 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected DateTime SetupTime;
         protected DateTime RunTime;
 
-        protected TDbContext DbContextBefore;
-        protected TDbContext DbContextAfter;
+        private TDbContext? _dbContextBefore;
+        protected TDbContext DbContextBefore
+        {
+            get
+            {
+                if (_dbContextBefore == null)
+                {
+                    throw new InvalidOperationException("DbContextBefore is no longer valid once the test has started running");
+                }
 
-        protected void AddEntityBuilder<T>(params IBuilder<T>[] builders) where T : BaseServerEntity 
+                return _dbContextBefore;
+            }
+        }
+
+        private TDbContext? _dbContextAfter;
+        protected TDbContext DbContextAfter
+        {
+            get
+            {
+                if (_dbContextAfter == null)
+                {
+                    throw new InvalidOperationException("DbContextAfter is not valid until the test has finished running");
+                }
+
+                return _dbContextAfter;
+            }
+        }
+
+        protected void AddEntityBuilders<T>(params IBuilder<T>[] builders) where T : BaseServerEntity 
+        {
+            foreach (var builder in builders)
+            {
+                _entityFactories.Add(context=> context.Add(builder.Object));
+            } 
+        }
+        protected void AddEntityBuilder<T>(IBuilder<T> builder) where T : BaseServerEntity 
+        {
+            _entityFactories.Add(context=> context.Add(builder.Object));
+        }
+
+        protected void AddEntityBuilders<T>(List<IBuilder<T>> builders) where T : BaseServerEntity 
         {
             foreach (var builder in builders)
             {
@@ -43,8 +80,8 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             _entityFactories.Clear();
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
-            DbContextAfter = null;
-            DbContextBefore = _dbContextBuilder.NewContext;
+            _dbContextAfter = null;
+            _dbContextBefore = _dbContextBuilder.NewContext;
 
             SetupTime = MockTimeService.Reset();
             RunTime = SetupTime.AddSeconds(122);
@@ -62,13 +99,13 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
                 setupFunc.Invoke(DbContextBefore);
             }
             DbContextBefore.SaveChanges();
-            DbContextBefore = null;
+            _dbContextBefore = null;
 
             MockTimeService.With(x => x.CurrentUtcTime, RunTime);
 
             var sut = ConstructGrain();
             
-            DbContextAfter = _dbContextBuilder.NewContext;
+            _dbContextAfter = _dbContextBuilder.NewContext;
 
             return sut;
         }

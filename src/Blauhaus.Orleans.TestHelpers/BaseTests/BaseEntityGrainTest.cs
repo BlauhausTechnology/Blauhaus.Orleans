@@ -40,7 +40,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             ExistingEntityBuilder = (TEntityBuilder) Activator.CreateInstance(typeof(TEntityBuilder), SetupTime)!;
             ExistingEntityBuilder.With(x => x.Id, GrainId);
             
-            AddEntityBuilder(ExistingEntityBuilder);
+            AddEntityBuilders(ExistingEntityBuilder);
         }
 
         protected override TGrain ConstructGrain()

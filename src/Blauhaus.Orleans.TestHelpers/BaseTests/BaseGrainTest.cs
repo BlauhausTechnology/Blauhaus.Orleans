@@ -28,8 +28,6 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
         protected TId GrainId;
 
-        protected DateTime SetupTime;
-        protected DateTime RunTime;
         
         //Users
         protected ConnectedUserMockBuilder MockUser = null!;
@@ -38,7 +36,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected IConnectedUser User => MockUser.Object;
         
         [SetUp]
-        public void Setup()
+        public virtual void Setup()
         {
             base.Cleanup();
 
@@ -50,16 +48,19 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             //Infrastructure
             AddSiloService(MockTimeService.Object);
             AddSiloService(MockAnalyticsService.Object);
-
-            SetupTime = MockTimeService.Reset();
-            HandleSetup();
         }
-         
-        protected abstract void HandleSetup();
+          
 
         protected TimeServiceMockBuilder MockTimeService => AddMock<TimeServiceMockBuilder, ITimeService>().Invoke();
         protected AnalyticsServiceMockBuilder MockAnalyticsService => AddMock<AnalyticsServiceMockBuilder, IAnalyticsService>().Invoke();
-        
+
+        protected override TSut ConstructSut()
+        {
+            return ConstructGrain();
+        }
+
+        protected abstract TSut ConstructGrain();
+
         protected void AddSiloService<T>(T service) where T : class
         {
             Silo.ServiceProvider.AddService(service);

@@ -16,29 +16,38 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
-        protected TEntity ExistingEntity => ExistingEntityBuilder.Object;
+        private TEntity? _existingEntity;
+        protected TEntity ExistingEntity
+        {
+            get
+            {
+                if (_existingEntity == null)
+                {
+                    throw new InvalidOperationException("ExistingEntity is only set when the test executes");
+                }
+
+                return _existingEntity;
+            }
+        }
+
         protected TEntityBuilder ExistingEntityBuilder = null!;
 
-        protected override void SetupDbContext(TDbContext setupContext)
+        public override void Setup()
         {
+            base.Setup();
+
             GrainId = Guid.NewGuid();
             ExistingEntityBuilder = (TEntityBuilder) Activator.CreateInstance(typeof(TEntityBuilder), SetupTime)!;
             ExistingEntityBuilder.With(x => x.Id, GrainId);
             
-            SetupExistingEntity(ExistingEntityBuilder);
-            
             AddEntityBuilder(ExistingEntityBuilder);
-             
         }
 
         protected override TGrain ConstructGrain()
         {
+            _existingEntity = ExistingEntityBuilder.Object;
             return Silo.CreateGrainAsync<TGrain>(GrainId).GetAwaiter().GetResult();
         }
-         
-        [Obsolete("Use ExistingEntityBuilder instead")]
-        protected virtual void SetupExistingEntity(TEntityBuilder existingEntityBuilder)
-        {
-        }
+          
     }
 }

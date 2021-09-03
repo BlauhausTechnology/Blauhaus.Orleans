@@ -20,51 +20,59 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     {
         private InMemoryDbContextBuilder<TDbContext> _dbContextBuilder = null!;
      
-        private readonly List<Action<TDbContext>> _setupFuncs = new();   
+        private readonly List<Action<TDbContext>> _entityFactories = new();   
+
+        protected DateTime SetupTime;
+        protected DateTime RunTime;
+
+        protected TDbContext DbContextBefore;
+        protected TDbContext DbContextAfter;
 
         protected void AddEntityBuilder<T>(params IBuilder<T>[] builders) where T : BaseServerEntity 
         {
             foreach (var builder in builders)
             {
-                _setupFuncs.Add(context=> context.Add(builder.Object));
+                _entityFactories.Add(context=> context.Add(builder.Object));
             } 
         }
 
-
-        protected sealed override void HandleSetup()
+        public override void Setup()
         {
+            base.Setup();
+
+            _entityFactories.Clear();
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
+
+            DbContextAfter = null;
+            DbContextBefore = _dbContextBuilder.NewContext;
+
+            SetupTime = MockTimeService.Reset();
+            RunTime = SetupTime.AddSeconds(122);
+
             TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
             AddSiloService((Func<TDbContext>) FactoryFunc);
-            PreTestDbContext = _dbContextBuilder.NewContext;
-            SetupDbContext(PreTestDbContext);
-        } 
 
-
-        protected virtual void SetupDbContext(TDbContext setupContext) { }
-        
-        protected TDbContext PostDbContext = null!;
-        protected TDbContext PreTestDbContext = null!;
-
+        }
+         
        
-        protected override TSut ConstructSut()
+        protected sealed override TSut ConstructSut()
         {
-            foreach (var setupFunc in _setupFuncs)
+            foreach (var setupFunc in _entityFactories)
             {
-                setupFunc.Invoke(PreTestDbContext);
+                setupFunc.Invoke(DbContextBefore);
             }
+            DbContextBefore.SaveChanges();
+            DbContextBefore = null;
 
-            PreTestDbContext.SaveChanges();
+            MockTimeService.With(x => x.CurrentUtcTime, RunTime);
 
-            RunTime = MockTimeService.AddSeconds(122);
             var sut = ConstructGrain();
-
-            PostDbContext = _dbContextBuilder.NewContext;
+            
+            DbContextAfter = _dbContextBuilder.NewContext;
 
             return sut;
         }
-
-        protected abstract TSut ConstructGrain();
+         
 
         protected T Seed<T>(T entity)
         {

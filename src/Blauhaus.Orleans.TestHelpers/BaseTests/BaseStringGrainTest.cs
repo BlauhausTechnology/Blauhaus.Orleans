@@ -13,7 +13,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             GrainId = Guid.NewGuid().ToString();
         }
 
-        protected override TSut ConstructSut()
+        protected override TSut ConstructGrain()
         {
             return Silo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
         }

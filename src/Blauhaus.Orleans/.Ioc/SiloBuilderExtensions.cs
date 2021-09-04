@@ -49,33 +49,21 @@ namespace Blauhaus.Orleans.Ioc
             var connectionString = configuration.GetConnectionString("AzureStorage");
             var buildConfig = configuration.ExtractBuildConfig();
 
-            siloBuilder              
-                .UseAzureStorageClustering(options =>
+            siloBuilder.UseAzureStorageClustering(options =>
             {
                 options.ConnectionString = connectionString;
                 options.TableName = clusterName + "ClusterInfo";
             });
-
+             
             if (buildConfig.Equals(BuildConfig.Debug))
             {
                 siloBuilder.ConfigureEndpoints(Dns.GetHostName(), 11111, 30000);
                 siloBuilder.Configure<ClusterMembershipOptions>(x => x.ValidateInitialConnectivity = false);
-                siloBuilder.Configure<ClusterOptions>(options =>
-                {
-                    options.ServiceId = clusterName + "Service";
-                    options.ClusterId = clusterName + "Cluster";
-                });
             }
             else
             {
                 siloBuilder
                     .UseKubernetesHosting();
-
-                siloBuilder.Configure<ClusterOptions>(options =>
-                {
-                    options.ServiceId = clusterName + "Service";
-                    options.ClusterId = clusterName + "Cluster";
-                });
             }
 
             return siloBuilder;

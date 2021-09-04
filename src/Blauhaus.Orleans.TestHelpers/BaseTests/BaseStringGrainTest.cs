@@ -6,12 +6,14 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     public abstract class BaseStringGrainTest<TSut> : BaseGrainTest<TSut, string> where TSut : Grain, IGrainWithStringKey
     {
         
-        protected override void HandleSetup()
+        public override void Setup()
         {
+            base.Setup();
+
             GrainId = Guid.NewGuid().ToString();
         }
 
-        protected override TSut ConstructSut()
+        protected override TSut ConstructGrain()
         {
             return Silo.CreateGrainAsync<TSut>(GrainId).GetAwaiter().GetResult();
         }

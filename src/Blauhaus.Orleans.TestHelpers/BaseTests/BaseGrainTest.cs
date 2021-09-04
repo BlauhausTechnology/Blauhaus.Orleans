@@ -27,18 +27,16 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         protected TestKitSilo Silo;
 
         protected TId GrainId;
-        
-        protected DateTime SetupTime { get; private set; }
-        protected DateTime RunTime { get; private set; }
+
         
         //Users
-        protected ConnectedUserMockBuilder MockUser;
-        protected AuthenticatedUserMockBuilder MockAdminUser;
+        protected ConnectedUserMockBuilder MockUser = null!;
+        protected AuthenticatedUserMockBuilder MockAdminUser = null!;
         protected IAuthenticatedUser AdminUser => MockAdminUser.Object;
         protected IConnectedUser User => MockUser.Object;
         
         [SetUp]
-        public void Setup()
+        public virtual void Setup()
         {
             base.Cleanup();
 
@@ -50,17 +48,19 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             //Infrastructure
             AddSiloService(MockTimeService.Object);
             AddSiloService(MockAnalyticsService.Object);
-
-            SetupTime = MockTimeService.Reset();
-            HandleSetup();
-            RunTime = MockTimeService.AddSeconds(122);
         }
-         
-        protected abstract void HandleSetup();
+          
 
         protected TimeServiceMockBuilder MockTimeService => AddMock<TimeServiceMockBuilder, ITimeService>().Invoke();
         protected AnalyticsServiceMockBuilder MockAnalyticsService => AddMock<AnalyticsServiceMockBuilder, IAnalyticsService>().Invoke();
-        
+
+        protected override TSut ConstructSut()
+        {
+            return ConstructGrain();
+        }
+
+        protected abstract TSut ConstructGrain();
+
         protected void AddSiloService<T>(T service) where T : class
         {
             Silo.ServiceProvider.AddService(service);

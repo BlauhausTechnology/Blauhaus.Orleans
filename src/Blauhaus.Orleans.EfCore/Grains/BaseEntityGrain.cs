@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
+using Blauhaus.Domain.Abstractions.DtoHandlers;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.Orleans.Abstractions.Resolver;
@@ -12,11 +13,28 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoLoader<TDto>
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver, Guid>
         where TDbContext : DbContext 
         where TEntity : class, IServerEntity
-        where TDto : IClientEntity
+        where TDto : IClientEntity<Guid>
+        where TGrainResolver : IGrainResolver
+    {
+        protected BaseEntityGrain(
+            Func<TDbContext> dbContextFactory, 
+            IAnalyticsService analyticsService, 
+            ITimeService timeService, 
+            TGrainResolver grainResolver) 
+                : base(dbContextFactory, analyticsService, timeService, grainResolver)
+        {
+        }
+    }
+
+    
+    //this is temporary to accomodate moonbase with Guid ids and string dto ids
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver, TDtoId> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
+        where TDbContext : DbContext 
+        where TEntity : class, IServerEntity
+        where TDto : IClientEntity<TDtoId>
         where TGrainResolver : IGrainResolver
     {
         

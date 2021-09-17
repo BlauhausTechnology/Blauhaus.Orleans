@@ -9,6 +9,8 @@ using Blauhaus.Orleans.Grains;
 using Blauhaus.Responses;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Orleans;
+using static Blauhaus.Errors.Errors;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
@@ -33,6 +35,85 @@ namespace Blauhaus.Orleans.EfCore.Grains
             TimeService = timeService;
         }
         
+        protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response>> func)
+        {
+            return TryExecuteCommandAsync(command, async () =>
+            {
+                using (var db = GetDbContext())
+                {
+                    var response = await func.Invoke(db, Now);
+                    if (response.IsSuccess)
+                    {
+                        await db.SaveChangesAsync();
+                    }
+                    return response;
+                }
+            }); 
+        }
+
+        protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, Func<Task<Response>> func)
+        {
+            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
+            {
+                try
+                {
+                    using (var db = GetDbContext())
+                    {
+                        var response = await func.Invoke();
+                        if (response.IsSuccess)
+                        {
+                            await db.SaveChangesAsync();
+                        }
+                        return response;
+                    }
+                }
+                catch (Exception e)
+                {
+                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                    return Response.Failure(Unexpected($"{typeof(TCommand).Name} failed to complete"));
+                }
+            }
+        }
+
+        protected  Task<Response<TResponse>> TryExecuteDbCommandAsync<TResponse, TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
+        {
+            return TryExecuteCommandAsync(command, async () =>
+            {
+                using (var db = GetDbContext())
+                {
+                    var response = await func.Invoke(db, Now);
+                    if (response.IsSuccess)
+                    {
+                        await db.SaveChangesAsync();
+                    }
+                    return response;
+                }
+            }); 
+        }
+
+        protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, Func<Task<Response<TResponse>>> func)
+        {
+            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
+            {
+                try
+                {
+                    using (var db = GetDbContext())
+                    {
+                        var response = await func.Invoke();
+                        if (response.IsSuccess)
+                        {
+                            await db.SaveChangesAsync();
+                        }
+                        return response;
+                    }
+                }
+                catch (Exception e)
+                {
+                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                    return Response.Failure<TResponse>(Unexpected($"{typeof(TCommand).Name} failed to return {typeof(TResponse).Name}"));
+                }
+            }
+        }
         protected Response TraceError(Error error)
         {
             return AnalyticsService.TraceErrorResponse(this, error);
@@ -85,7 +166,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         }
     }
 
-    public abstract class BaseDbGrain<TDbContext> : BaseGrain 
+    public abstract class BaseDbGrain<TDbContext> : Grain 
         where TDbContext : DbContext
     {
         protected readonly Func<TDbContext> GetDbContext;

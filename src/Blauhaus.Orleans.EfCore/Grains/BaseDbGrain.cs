@@ -58,7 +58,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
-
         protected async Task<Response> TryExecuteDbAsync(Func<TDbContext, DateTime, Task<Response>> func, string? trace = null)
         {
             IDisposable? traceHandle = null;
@@ -89,6 +88,30 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
         
+        protected async Task TryExecuteDbAsync(Func<TDbContext, DateTime, Task> func, string? trace = null)
+        {
+            IDisposable? traceHandle = null;
+            if (trace != null)
+            {
+                traceHandle = AnalyticsService.StartTrace(this, trace);
+            }
+
+            try
+            {
+                using var db = GetDbContext();
+                await func.Invoke(db, TimeService.CurrentUtcTime);
+            }
+            catch (Exception e)
+            {
+                AnalyticsService.LogException(this, e);
+            }
+            finally
+            {
+                traceHandle?.Dispose();
+            }
+        }
+
+
         protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response>> func)
         {
             return TryExecuteCommandAsync(command, async () =>

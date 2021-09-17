@@ -11,6 +11,7 @@ using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
 using static Blauhaus.Errors.Errors;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
@@ -33,6 +34,36 @@ namespace Blauhaus.Orleans.EfCore.Grains
             GetDbContext = dbContextFactory;
             AnalyticsService = analyticsService;
             TimeService = timeService;
+        }
+        
+        protected async Task<Response> TryExecuteDbAsync(Func<TDbContext, DateTime, Task<Response>> func, string? trace = null)
+        {
+            IDisposable? traceHandle = null;
+            if (trace != null)
+            {
+                traceHandle = AnalyticsService.StartTrace(this, trace);
+            }
+
+            try
+            {
+                using var db = GetDbContext();
+                var response = await func.Invoke(db, TimeService.CurrentUtcTime);
+                if (response.IsSuccess)
+                {
+                    await db.SaveChangesAsync();
+                }
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                AnalyticsService.LogException(this, e);
+                return Response.Failure(Unexpected("failed to complete database operation"));
+            }
+            finally
+            {
+                traceHandle?.Dispose();
+            }
         }
         
         protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response>> func)
@@ -75,6 +106,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
+
         protected  Task<Response<TResponse>> TryExecuteDbCommandAsync<TResponse, TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
         {
             return TryExecuteCommandAsync(command, async () =>
@@ -114,6 +146,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 }
             }
         }
+
+
+
+
         protected Response TraceError(Error error)
         {
             return AnalyticsService.TraceErrorResponse(this, error);

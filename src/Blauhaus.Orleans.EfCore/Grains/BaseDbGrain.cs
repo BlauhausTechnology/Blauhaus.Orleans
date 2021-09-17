@@ -36,6 +36,29 @@ namespace Blauhaus.Orleans.EfCore.Grains
             TimeService = timeService;
         }
         
+        protected async Task TryExecuteAsync(Func<Task> func, string? trace = null)
+        {
+            IDisposable? traceHandle = null;
+            if (trace != null)
+            {
+                traceHandle = AnalyticsService.StartTrace(this, trace);
+            }
+
+            try
+            {
+                await func.Invoke();
+            }
+            catch (Exception e)
+            {
+                AnalyticsService.LogException(this, e);
+            }
+            finally
+            {
+                traceHandle?.Dispose();
+            }
+        }
+
+
         protected async Task<Response> TryExecuteDbAsync(Func<TDbContext, DateTime, Task<Response>> func, string? trace = null)
         {
             IDisposable? traceHandle = null;

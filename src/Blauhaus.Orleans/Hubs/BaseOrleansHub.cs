@@ -33,9 +33,13 @@ namespace Blauhaus.Orleans.Hubs
             ClusterClient = clusterClient;
         }
 
+
+        //Handle commands with return value
+
         protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
             TCommand command, IDictionary<string, string> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver)
                 where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+                where TCommand : notnull
         {
             return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
         }
@@ -43,39 +47,45 @@ namespace Blauhaus.Orleans.Hubs
         protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
             TCommand command, IDictionary<string, string> headers, Guid grainId)
             where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+            where TCommand : notnull
         {
             return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
         }
          
-        protected Task<Response<TDto>> HandleGrainCommandForUserAsync<TDto, TCommand, TGrain>(
+        protected Task<Response<TResponse>> HandleGrainCommandForUserAsync<TResponse, TCommand, TGrain>(
             TCommand command, IDictionary<string, string> headers)
-            where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TDto, TCommand, IConnectedUser>
+            where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
             where TCommand : notnull
         {
             return HandleCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id));
         }
 
-        protected async Task<Response<SyncResponse<TDto>>> HandleSyncRequestForUserAsync<TDto, TGrain>(SyncRequest command, IDictionary<string, string> headers)
-            where TGrain : IGrainWithGuidKey, ISyncRequestHandler<TDto> where TDto : IClientEntity
+
+        
+        //Handle void commands 
+       
+        protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
+            TCommand command, IDictionary<string, string> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver)
+            where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
+            where TCommand : notnull
         {
-            using (var _ = AnalyticsService.StartRequestOperation(this, $"Sync {typeof(TDto).Name}", headers))
-            {
-                try
-                {
-                    var connectedUser = GetConnectedUser();
-                    var id = connectedUser.UserId;
-                    var publisherGrain = ClusterClient.GetGrain<TGrain>(id);
-                    return await publisherGrain.HandleAsync(command, connectedUser);
-                }
-                catch (ErrorException error)
-                {
-                    return AnalyticsService.TraceErrorResponse<SyncResponse<TDto>>(this, error.Error, command.ToObjectDictionary());
-                }
-                catch (Exception e)
-                {
-                    return AnalyticsService.LogExceptionResponse<SyncResponse<TDto>>(this, e, Errors.Errors.Unexpected(e.Message), command.ToObjectDictionary());
-                }
-            }
+            return HandleVoidCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
+        }
+
+        protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
+            TCommand command, IDictionary<string, string> headers, Guid grainId)
+            where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
+            where TCommand : notnull
+        {
+            return HandleVoidCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
+        }
+
+        protected Task<Response> HandleVoidGrainCommandForUserAsync<TCommand, TGrain>(
+            TCommand command, IDictionary<string, string> headers)
+            where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
+            where TCommand : notnull
+        {
+            return HandleVoidCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id));
         }
     }
 }

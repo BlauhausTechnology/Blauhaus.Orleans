@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Extensions;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Errors;
+using Blauhaus.Errors.Extensions;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.Grains;
 using Blauhaus.Responses;
@@ -43,7 +44,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
             {
                 traceHandle = AnalyticsService.StartTrace(this, trace);
             }
-
             try
             {
                 await func.Invoke();
@@ -58,7 +58,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
-        protected async Task<Response> TryExecuteDbAsync(Func<TDbContext, DateTime, Task<Response>> func, string? trace = null)
+        protected async Task<Response> TryUpdateDbAsync(Func<TDbContext, DateTime, Task<Response>> func, string? trace = null)
         {
             IDisposable? traceHandle = null;
             if (trace != null)
@@ -79,8 +79,15 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
             catch (Exception e)
             {
-                AnalyticsService.LogException(this, e);
-                return Response.Failure(Unexpected("failed to complete database operation"));
+                if (e.IsErrorException())
+                {
+                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
+                }
+                else
+                {
+                    AnalyticsService.LogException(this, e);
+                    return Response.Failure(Unexpected("failed to complete database operation"));
+                }
             }
             finally
             {
@@ -88,7 +95,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
         
-        protected async Task TryExecuteDbAsync(Func<TDbContext, DateTime, Task> func, string? trace = null)
+        protected async Task TryUpdateDbAsync(Func<TDbContext, DateTime, Task> func, string? trace = null)
         {
             IDisposable? traceHandle = null;
             if (trace != null)
@@ -146,6 +153,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 }
                 catch (Exception e)
                 {
+                    if (e.IsErrorException())
+                    {
+                        return AnalyticsService.TraceErrorResponse(this, e.ToError());
+                    }
                     AnalyticsService.LogException(this, e, command.ToObjectDictionary());
                     return Response.Failure(Unexpected($"{typeof(TCommand).Name} failed to complete"));
                 }
@@ -187,6 +198,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 }
                 catch (Exception e)
                 {
+                    if (e.IsErrorException())
+                    {
+                        return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
+                    }
                     AnalyticsService.LogException(this, e, command.ToObjectDictionary());
                     return Response.Failure<TResponse>(Unexpected($"{typeof(TCommand).Name} failed to return {typeof(TResponse).Name}"));
                 }

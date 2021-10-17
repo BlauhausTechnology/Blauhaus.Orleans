@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Domain.Abstractions.DtoHandlers;
@@ -131,11 +133,23 @@ namespace Blauhaus.Orleans.EfCore.Grains
         }
 
         protected virtual async Task<TEntity?> LoadEntityAsync(TDbContext dbContext, Guid id)
+        { 
+            var query = dbContext.Set<TEntity>().AsNoTracking();
+
+            query = Include(query);
+            
+            return await query
+                .FirstOrDefaultAsync(GetFilter(id));
+        }
+
+        protected virtual IQueryable<TEntity> Include(IQueryable<TEntity> query)
         {
-            return await dbContext.Set<TEntity>().AsNoTracking()
-                .FirstOrDefaultAsync(x => 
-                    x.Id == id && 
-                    x.EntityState != EntityState.Deleted);
+            return query;
+        }
+
+        protected Expression<Func<TEntity, bool>> GetFilter(Guid id)
+        {
+            return entity => entity.Id == id;
         }
 
         protected virtual Task HandleEntityLoadedAsync(TDbContext dbContext, TEntity entity)

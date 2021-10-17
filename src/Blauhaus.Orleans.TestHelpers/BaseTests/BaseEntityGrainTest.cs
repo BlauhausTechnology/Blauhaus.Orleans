@@ -2,6 +2,7 @@
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Domain.Server.Entities;
 using Blauhaus.Domain.TestHelpers.EFCore.Extensions;
+using Blauhaus.Domain.TestHelpers.EntityBuilders;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.EfCore.Grains;
 using Blauhaus.TestHelpers.Builders.Base;
@@ -12,7 +13,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver> : BaseDbGrainTest<TGrain, TDbContext, Guid, TGrainResolver>
         where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver> 
         where TEntity : BaseServerEntity
-        where TEntityBuilder : BaseReadonlyFixtureBuilder<TEntityBuilder, TEntity>
+        where TEntityBuilder : BaseServerEntityBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
@@ -36,9 +37,8 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         {
             base.Setup();
 
-            GrainId = Guid.NewGuid();
             ExistingEntityBuilder = (TEntityBuilder) Activator.CreateInstance(typeof(TEntityBuilder), SetupTime)!;
-            ExistingEntityBuilder.With(x => x.Id, GrainId);
+            GrainId = ExistingEntityBuilder.Id;
             
             AddEntityBuilders(ExistingEntityBuilder);
         }

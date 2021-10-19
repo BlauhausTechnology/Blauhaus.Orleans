@@ -70,7 +70,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             {
                 using var db = GetDbContext();
                 var response = await func.Invoke(db, TimeService.CurrentUtcTime);
-                if (response.IsSuccess)
+                if (response.IsSuccess && db.ChangeTracker.HasChanges())
                 {
                     await db.SaveChangesAsync();
                 }
@@ -107,6 +107,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
             {
                 using var db = GetDbContext();
                 await func.Invoke(db, TimeService.CurrentUtcTime);
+                if (db.ChangeTracker.HasChanges())
+                {
+                    await db.SaveChangesAsync();
+                }
             }
             catch (Exception e)
             {
@@ -126,7 +130,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 using (var db = GetDbContext())
                 {
                     var response = await func.Invoke(db, Now);
-                    if (response.IsSuccess)
+                    if (response.IsSuccess && db.ChangeTracker.HasChanges())
                     {
                         await db.SaveChangesAsync();
                     }
@@ -144,7 +148,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                     using (var db = GetDbContext())
                     {
                         var response = await func.Invoke();
-                        if (response.IsSuccess)
+                        if (response.IsSuccess && db.ChangeTracker.HasChanges())
                         {
                             await db.SaveChangesAsync();
                         }

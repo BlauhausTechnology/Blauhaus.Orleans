@@ -22,98 +22,51 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto> 
+ 
+    
+    //this is temporary to accomodate moonbase with Guid ids and string dto ids
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
         where TDbContext : DbContext 
-        where TEntity : BaseServerEntity, IDtoOwner<TDto>
+        where TEntity : BaseServerEntity
         where TDto : IClientEntity<Guid>
         where TGrainResolver : IGrainResolver
     {
+        
         protected BaseEntityGrain(
             Func<TDbContext> dbContextFactory, 
             IAnalyticsService analyticsService, 
-            ITimeService timeService, 
+            ITimeService timeService,
             TGrainResolver grainResolver) 
                 : base(dbContextFactory, analyticsService, timeService, grainResolver)
         {
-        }
+        } 
+        
         public Task<TDto> GetDtoAsync()
         {
-            return LoadedEntity.GetDtoAsync();
-        }
-        
-        public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
+            try
             {
-                if (!user.IsAdminUser())
-                    return TraceError(AuthError.NotAuthorized);
-
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
+                if (Entity == null)
                 {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+                    throw new InvalidOperationException($"Cannot GetDto because {typeof(TEntity).Name} with id {Id} does not exist");
                 }
-
-                db.Attach(LoadedEntity);
-                LoadedEntity.Activate(now);
-                
-                return await HandleActivatedAsync(LoadedEntity);
-            });
-        }
-
-        protected virtual Task<Response> HandleActivatedAsync(TEntity loadedEntity) => Response.SuccessTask();
-
-        public async Task<Response> HandleAsync(ArchiveCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
+            
+                return GetDtoAsync(Entity);
+            }
+            catch (Exception e)
             {
-                if (!user.IsAdminUser())
-                    return TraceError(AuthError.NotAuthorized);
-
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not EntityState.Active)
-                {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
-                }
-
-                db.Attach(LoadedEntity);
-                LoadedEntity.Archive(now);
-
-                return await HandleArchivedAsync(LoadedEntity);
-
-            });
+                AnalyticsService.LogException(this, e);
+                throw;
+            }
         }
 
-        protected virtual Task<Response> HandleArchivedAsync(TEntity entity) => Response.SuccessTask();
+        protected abstract Task<TDto> GetDtoAsync(TEntity entity);
 
-        public async Task<Response> HandleAsync(DeleteCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
-            {
-                if (!user.IsAdminUser()) 
-                    return TraceError(AuthError.NotAuthorized);
-
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
-                {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
-                }
-
-                db.Attach(LoadedEntity);
-                LoadedEntity.Delete(now);
-                
-                return await HandleDeletedAsync(LoadedEntity); 
-            });
-        }
-        protected virtual Task<Response> HandleDeletedAsync(TEntity entity) => Response.SuccessTask();
-        
     }
-
-     
+    
     
     public abstract class BaseEntityGrain<TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
         where TDbContext : DbContext 
-        where TEntity : class, IServerEntity
+        where TEntity : BaseServerEntity
         where TGrainResolver : IGrainResolver
     {
         protected TEntity? Entity;
@@ -195,6 +148,75 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return Task.CompletedTask;
         }
+
+        
+        public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
+        {
+            return await TryExecuteDbCommandAsync(command, async (db, now) =>
+            {
+                if (!user.IsAdminUser())
+                    return TraceError(AuthError.NotAuthorized);
+
+                var currentEntityState = LoadedEntity.EntityState;
+                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
+                {
+                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+                }
+
+                db.Attach(LoadedEntity);
+                LoadedEntity.Activate(now);
+                
+                return await HandleActivatedAsync(LoadedEntity);
+            });
+        }
+
+        protected virtual Task<Response> HandleActivatedAsync(TEntity loadedEntity) => Response.SuccessTask();
+
+        public async Task<Response> HandleAsync(ArchiveCommand command, IAuthenticatedUser user)
+        {
+            return await TryExecuteDbCommandAsync(command, async (db, now) =>
+            {
+                if (!user.IsAdminUser())
+                    return TraceError(AuthError.NotAuthorized);
+
+                var currentEntityState = LoadedEntity.EntityState;
+                if (currentEntityState is not EntityState.Active)
+                {
+                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+                }
+
+                db.Attach(LoadedEntity);
+                LoadedEntity.Archive(now);
+
+                return await HandleArchivedAsync(LoadedEntity);
+
+            });
+        }
+
+        protected virtual Task<Response> HandleArchivedAsync(TEntity entity) => Response.SuccessTask();
+
+        public async Task<Response> HandleAsync(DeleteCommand command, IAuthenticatedUser user)
+        {
+            return await TryExecuteDbCommandAsync(command, async (db, now) =>
+            {
+                if (!user.IsAdminUser()) 
+                    return TraceError(AuthError.NotAuthorized);
+
+                var currentEntityState = LoadedEntity.EntityState;
+                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
+                {
+                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+                }
+
+                db.Attach(LoadedEntity);
+                LoadedEntity.Delete(now);
+                
+                return await HandleDeletedAsync(LoadedEntity); 
+            });
+        }
+        protected virtual Task<Response> HandleDeletedAsync(TEntity entity) => Response.SuccessTask();
+        
+
          
     }
 }

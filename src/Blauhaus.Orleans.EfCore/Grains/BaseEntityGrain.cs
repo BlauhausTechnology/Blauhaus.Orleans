@@ -22,7 +22,7 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto> 
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity, IDtoOwner<TDto>
         where TDto : IClientEntity<Guid>
@@ -36,7 +36,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 : base(dbContextFactory, analyticsService, timeService, grainResolver)
         {
         }
-
+        public Task<TDto> GetDtoAsync()
+        {
+            return LoadedEntity.GetDtoAsync();
+        }
         
         public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
         {
@@ -103,6 +106,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             });
         }
         protected virtual Task<Response> HandleDeletedAsync(TEntity entity) => Response.SuccessTask();
+        
     }
 
      

@@ -152,11 +152,8 @@ namespace Blauhaus.Orleans.EfCore.Grains
         
         public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
         {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
-            {
-                if (!user.IsAdminUser())
-                    return TraceError(AuthError.NotAuthorized);
-
+            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+            { 
                 var currentEntityState = LoadedEntity.EntityState;
                 if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
                 {
@@ -174,11 +171,8 @@ namespace Blauhaus.Orleans.EfCore.Grains
 
         public async Task<Response> HandleAsync(ArchiveCommand command, IAuthenticatedUser user)
         {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
-            {
-                if (!user.IsAdminUser())
-                    return TraceError(AuthError.NotAuthorized);
-
+            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+            { 
                 var currentEntityState = LoadedEntity.EntityState;
                 if (currentEntityState is not EntityState.Active)
                 {
@@ -197,11 +191,8 @@ namespace Blauhaus.Orleans.EfCore.Grains
 
         public async Task<Response> HandleAsync(DeleteCommand command, IAuthenticatedUser user)
         {
-            return await TryExecuteDbCommandAsync(command, async (db, now) =>
-            {
-                if (!user.IsAdminUser()) 
-                    return TraceError(AuthError.NotAuthorized);
-
+            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+            { 
                 var currentEntityState = LoadedEntity.EntityState;
                 if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
                 {

@@ -6,6 +6,7 @@ using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Auth.Abstractions.Errors;
 using Blauhaus.Auth.Abstractions.Extensions;
 using Blauhaus.Auth.Abstractions.User;
+using Blauhaus.Domain.Abstractions.Commands;
 using Blauhaus.Errors;
 using Blauhaus.Errors.Extensions;
 using Blauhaus.Orleans.Abstractions.Resolver;
@@ -125,9 +126,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
-        protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response>> func)
+
+        protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response>> func)
         {
-            return TryExecuteCommandAsync(command, async () =>
+            return TryExecuteCommandAsync(command, user, async () =>
             {
                 using (var db = GetDbContext())
                 {
@@ -141,12 +143,19 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }); 
         }
 
-        protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, Func<Task<Response>> func)
+        protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response>> func)
         {
             using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
             {
                 try
                 {
+                    if (command is IAdminCommand)
+                    {
+                        if (!user.IsAdminUser())
+                        {
+                            return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
+                        }
+                    }
                     using (var db = GetDbContext())
                     {
                         var response = await func.Invoke();
@@ -170,9 +179,9 @@ namespace Blauhaus.Orleans.EfCore.Grains
         }
 
 
-        protected  Task<Response<TResponse>> TryExecuteDbCommandAsync<TResponse, TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
+        protected  Task<Response<TResponse>> TryExecuteDbCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
         {
-            return TryExecuteCommandAsync(command, async () =>
+            return TryExecuteCommandAsync(command, user, async () =>
             {
                 using (var db = GetDbContext())
                 {
@@ -186,12 +195,21 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }); 
         }
 
-        protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, Func<Task<Response<TResponse>>> func)
+        protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response<TResponse>>> func)
         {
             using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
             {
                 try
                 {
+                    
+                    if (command is IAdminCommand)
+                    {
+                        if (!user.IsAdminUser())
+                        {
+                            return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
+                        }
+                    }
+
                     using (var db = GetDbContext())
                     {
                         var response = await func.Invoke();
@@ -213,28 +231,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
                 }
             }
         }
-
-        protected  Task<Response<TResponse>> TryExecuteAdminDbCommandAsync<TCommand, TResponse>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
-        {
-            return TryExecuteCommandAsync(command, () =>
-            {
-                if (!user.IsAdminUser()) 
-                    return TraceErrorTask<TResponse>(AuthError.NotAuthorized);
-
-                return TryExecuteDbCommandAsync(command, func); 
-            }); 
-        }
-        
-        protected  Task<Response> TryExecuteAdminDbCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response>> func)
-        {
-            return TryExecuteCommandAsync(command, () =>
-            {
-                if (!user.IsAdminUser()) 
-                    return TraceErrorTask(AuthError.NotAuthorized);
-
-                return TryExecuteDbCommandAsync(command, func); 
-            }); 
-        }
+         
 
 
 

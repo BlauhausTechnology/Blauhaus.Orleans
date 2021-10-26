@@ -148,7 +148,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return Task.CompletedTask;
         }
-
         
         public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
         {

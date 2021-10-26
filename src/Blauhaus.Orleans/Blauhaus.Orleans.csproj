@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blauhaus.Auth.Common" Version="0.12.4" />
+    <PackageReference Include="Blauhaus.Auth.Common" Version="0.12.5" />
     <PackageReference Include="Blauhaus.Common.ValueObjects" Version="1.12.6" />
     <PackageReference Include="Blauhaus.SignalR.Server" Version="0.12.2" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.12.0" />

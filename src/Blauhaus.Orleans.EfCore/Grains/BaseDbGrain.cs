@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Extensions;
 using Blauhaus.Analytics.Abstractions.Service;
+using Blauhaus.Auth.Abstractions.Errors;
+using Blauhaus.Auth.Abstractions.Extensions;
+using Blauhaus.Auth.Abstractions.User;
 using Blauhaus.Errors;
 using Blauhaus.Errors.Extensions;
 using Blauhaus.Orleans.Abstractions.Resolver;
@@ -122,7 +125,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
-
         protected  Task<Response> TryExecuteDbCommandAsync<TCommand>(TCommand command, Func<TDbContext, DateTime, Task<Response>> func)
         {
             return TryExecuteCommandAsync(command, async () =>
@@ -212,6 +214,27 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
         }
 
+        protected  Task<Response<TResponse>> TryExecuteAdminDbCommandAsync<TCommand, TResponse>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response<TResponse>>> func)
+        {
+            return TryExecuteCommandAsync(command, () =>
+            {
+                if (!user.IsAdminUser()) 
+                    return TraceErrorTask<TResponse>(AuthError.NotAuthorized);
+
+                return TryExecuteDbCommandAsync(command, func); 
+            }); 
+        }
+        
+        protected  Task<Response> TryExecuteAdminDbCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<TDbContext, DateTime, Task<Response>> func)
+        {
+            return TryExecuteCommandAsync(command, () =>
+            {
+                if (!user.IsAdminUser()) 
+                    return TraceErrorTask(AuthError.NotAuthorized);
+
+                return TryExecuteDbCommandAsync(command, func); 
+            }); 
+        }
 
 
 

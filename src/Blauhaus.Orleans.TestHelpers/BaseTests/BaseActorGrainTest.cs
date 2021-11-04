@@ -19,11 +19,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         where TModelBuilder : class, IBuilder<TModelBuilder, TModel>, new()
         where TDto : IHasId<Guid>
         where TGrainResolver : class, IGrainResolver
-        where TGrainResolverMockBuilder : BaseGrainResolverMockBuilder<TGrainResolverMockBuilder, TGrainResolver>
+        where TGrainResolverMockBuilder : BaseGrainResolverMockBuilder<TGrainResolverMockBuilder, TGrainResolver>, new()
     {
 
         protected TActorMockBuilder MockActor = null!;
         protected TModelBuilder ModelBuilder = null!;
+        protected TGrainResolverMockBuilder MockGrainResolver = null!;
 
         public override void Setup()
         {
@@ -37,11 +38,9 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             MockActor.Mock.Setup(x => x.GetModelAsync()).ReturnsAsync(() => ModelBuilder.Object);
             AddSiloService(MockActor.Object);
 
+            MockGrainResolver = new TGrainResolverMockBuilder();
             AddSiloService(MockGrainResolver.Object);
         }
-
-
-        protected TGrainResolverMockBuilder MockGrainResolver = null!;
        
     }
 }

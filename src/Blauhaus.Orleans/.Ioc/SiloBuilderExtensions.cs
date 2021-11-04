@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using AutoMapper.Configuration;
@@ -39,6 +40,32 @@ namespace Blauhaus.Orleans.Ioc
             siloBuilder
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
                 .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = configuration.GetConnectionString("AzureStorage"));
+
+            return siloBuilder;
+        }
+
+        public static ISiloBuilder ConfigurePersistentStreams(this ISiloBuilder siloBuilder, IConfiguration configuration)
+        {
+            var pullingPeriodConfig = configuration.ExtractClusterValue("PersistentStreamPullingPeriodMs");
+            if (!int.TryParse(pullingPeriodConfig, out var pullingPeriod))
+            {
+                pullingPeriod = 5000;
+            }
+            siloBuilder
+                .AddAzureQueueStreams(StreamProvider.Persistent, configurator =>
+                {
+                    configurator.ConfigureAzureQueue(
+                        ob => ob.Configure(options =>
+                        {
+                            options.ConnectionString = configuration.GetConnectionString("AzureStorage");
+                            options.QueueNames = new List<string> { "azurequeueprovider-0" };
+                        }));
+                    configurator.ConfigureCacheSize(1024);
+                    configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+                    {
+                        options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(pullingPeriod);
+                    }));
+                });
 
             return siloBuilder;
         }

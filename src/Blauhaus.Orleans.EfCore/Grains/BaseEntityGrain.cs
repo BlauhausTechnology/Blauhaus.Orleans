@@ -22,9 +22,6 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
- 
-    
-    //this is temporary to accomodate moonbase with Guid ids and string dto ids
     public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity

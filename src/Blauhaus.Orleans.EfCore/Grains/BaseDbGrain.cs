@@ -15,8 +15,7 @@ using Blauhaus.Responses;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
-using static Blauhaus.Errors.Errors;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using static Blauhaus.Errors.Error;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {

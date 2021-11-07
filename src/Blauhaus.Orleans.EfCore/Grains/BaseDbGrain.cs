@@ -200,7 +200,6 @@ namespace Blauhaus.Orleans.EfCore.Grains
             {
                 try
                 {
-                    
                     if (command is IAdminCommand)
                     {
                         if (!user.IsAdminUser())

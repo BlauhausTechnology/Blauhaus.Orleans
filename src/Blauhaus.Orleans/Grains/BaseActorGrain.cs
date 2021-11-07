@@ -91,93 +91,89 @@ namespace Blauhaus.Orleans.Grains
         
         protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response>> func)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
+            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
+
+            try
             {
-                try
+                if (command is IAdminCommand)
                 {
-                    if (command is IAdminCommand)
+                    if (!user.IsAdminUser())
                     {
-                        if (!user.IsAdminUser())
-                        {
-                            return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
-                        }
+                        return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
                     }
-                    return await func.Invoke();
                 }
-                catch (Exception e)
+                return await func.Invoke();
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
                 {
-                    if (e.IsErrorException())
-                    {
-                        return AnalyticsService.TraceErrorResponse(this, e.ToError());
-                    }
-                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                    return Response.Failure(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
+                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
                 }
+                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                return Response.Failure(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
             }
         }
         protected async Task<Response> TryExecuteAsync(Func<Task<Response>> func, string operationName, Dictionary<string, object>? properties = null)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties))
+            using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
+
+            try
             {
-                try
+                return await func.Invoke();
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
                 {
-                    return await func.Invoke();
+                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
                 }
-                catch (Exception e)
-                {
-                    if (e.IsErrorException())
-                    {
-                        return AnalyticsService.TraceErrorResponse(this, e.ToError());
-                    }
-                    AnalyticsService.LogException(this, e, properties);
-                    return Response.Failure(Error.Unexpected($"{operationName} failed to complete"));
-                }
+                AnalyticsService.LogException(this, e, properties);
+                return Response.Failure(Error.Unexpected($"{operationName} failed to complete"));
             }
         }
         
         protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response<TResponse>>> func)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
+            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
+
+            try
             {
-                try
+                if (command is IAdminCommand)
                 {
-                    if (command is IAdminCommand)
+                    if (!user.IsAdminUser())
                     {
-                        if (!user.IsAdminUser())
-                        {
-                            return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
-                        }
+                        return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
                     }
-                    return await func.Invoke();
                 }
-                catch (Exception e)
+                return await func.Invoke();
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
                 {
-                    if (e.IsErrorException())
-                    {
-                        return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
-                    }
-                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                    return Response.Failure<TResponse>(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
+                    return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
                 }
+                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                return Response.Failure<TResponse>(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
             }
         }
         protected async Task<Response<T>> TryExecuteAsync<T>(Func<Task<Response<T>>> func, string operationName, Dictionary<string, object>? properties = null)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties))
+            using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
+
+            try
             {
-                try
+                return await func.Invoke();
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
                 {
-                    return await func.Invoke();
+                    return AnalyticsService.TraceErrorResponse<T>(this, e.ToError());
                 }
-                catch (Exception e)
-                {
-                    if (e.IsErrorException())
-                    {
-                        return AnalyticsService.TraceErrorResponse<T>(this, e.ToError());
-                    }
-                    AnalyticsService.LogException(this, e, properties);
-                    return Response.Failure<T>(Error.Unexpected($"{operationName} failed to complete"));
-                }
+                AnalyticsService.LogException(this, e, properties);
+                return Response.Failure<T>(Error.Unexpected($"{operationName} failed to complete"));
             }
         }
     }

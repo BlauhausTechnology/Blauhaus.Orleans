@@ -130,50 +130,48 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return TryExecuteCommandAsync(command, user, async () =>
             {
-                using (var db = GetDbContext())
+                using var db = GetDbContext();
+
+                var response = await func.Invoke(db, Now);
+                if (response.IsSuccess && db.ChangeTracker.HasChanges())
                 {
-                    var response = await func.Invoke(db, Now);
-                    if (response.IsSuccess && db.ChangeTracker.HasChanges())
-                    {
-                        await db.SaveChangesAsync();
-                    }
-                    return response;
+                    await db.SaveChangesAsync();
                 }
+                return response;
             }); 
         }
 
         protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response>> func)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
+            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
+
+            try
             {
-                try
+                if (command is IAdminCommand)
                 {
-                    if (command is IAdminCommand)
+                    if (!user.IsAdminUser())
                     {
-                        if (!user.IsAdminUser())
-                        {
-                            return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
-                        }
-                    }
-                    using (var db = GetDbContext())
-                    {
-                        var response = await func.Invoke();
-                        if (response.IsSuccess && db.ChangeTracker.HasChanges())
-                        {
-                            await db.SaveChangesAsync();
-                        }
-                        return response;
+                        return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
                     }
                 }
-                catch (Exception e)
+
+                using var db = GetDbContext();
+                var response = await func.Invoke();
+                if (response.IsSuccess && db.ChangeTracker.HasChanges())
                 {
-                    if (e.IsErrorException())
-                    {
-                        return AnalyticsService.TraceErrorResponse(this, e.ToError());
-                    }
-                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                    return Response.Failure(Unexpected($"{typeof(TCommand).Name} failed to complete"));
+                    await db.SaveChangesAsync();
                 }
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
+                {
+                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
+                }
+                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                return Response.Failure(Unexpected($"{typeof(TCommand).Name} failed to complete"));
             }
         }
 
@@ -182,51 +180,47 @@ namespace Blauhaus.Orleans.EfCore.Grains
         {
             return TryExecuteCommandAsync(command, user, async () =>
             {
-                using (var db = GetDbContext())
+                using var db = GetDbContext();
+
+                var response = await func.Invoke(db, Now);
+                if (response.IsSuccess)
                 {
-                    var response = await func.Invoke(db, Now);
-                    if (response.IsSuccess)
-                    {
-                        await db.SaveChangesAsync();
-                    }
-                    return response;
+                    await db.SaveChangesAsync();
                 }
+                return response;
             }); 
         }
 
         protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response<TResponse>>> func)
         {
-            using (var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary()))
-            {
-                try
-                {
-                    if (command is IAdminCommand)
-                    {
-                        if (!user.IsAdminUser())
-                        {
-                            return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
-                        }
-                    }
+            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand).Name} executed by {this.GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
 
-                    using (var db = GetDbContext())
-                    {
-                        var response = await func.Invoke();
-                        if (response.IsSuccess)
-                        {
-                            await db.SaveChangesAsync();
-                        }
-                        return response;
-                    }
-                }
-                catch (Exception e)
+            try
+            {
+                if (command is IAdminCommand)
                 {
-                    if (e.IsErrorException())
+                    if (!user.IsAdminUser())
                     {
-                        return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
+                        return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
                     }
-                    AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                    return Response.Failure<TResponse>(Unexpected($"{typeof(TCommand).Name} failed to return {typeof(TResponse).Name}"));
                 }
+
+                using var db = GetDbContext();
+                var response = await func.Invoke();
+                if (response.IsSuccess)
+                {
+                    await db.SaveChangesAsync();
+                }
+                return response;
+            }
+            catch (Exception e)
+            {
+                if (e.IsErrorException())
+                {
+                    return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
+                }
+                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+                return Response.Failure<TResponse>(Unexpected($"{typeof(TCommand).Name} failed to return {typeof(TResponse).Name}"));
             }
         }
          
@@ -269,7 +263,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         
         protected Response TraceError(Error error, Dictionary<string, object> properties)
         {
-            return AnalyticsService.TraceErrorResponse(this, error);
+            return AnalyticsService.TraceErrorResponse(this, error, properties);
         }
         
         protected Response<T> TraceErrorWarning<T>(Error error, Dictionary<string, object>? properties = null)
@@ -340,7 +334,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         
         protected Response TraceError(Error error, Dictionary<string, object> properties)
         {
-            return AnalyticsService.TraceErrorResponse(this, error);
+            return AnalyticsService.TraceErrorResponse(this, error, properties);
         }
         
         protected Response<T> TraceErrorWarning<T>(Error error, Dictionary<string, object>? properties = null)

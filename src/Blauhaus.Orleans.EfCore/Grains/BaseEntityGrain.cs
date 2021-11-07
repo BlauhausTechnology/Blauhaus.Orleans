@@ -105,13 +105,11 @@ namespace Blauhaus.Orleans.EfCore.Grains
                     throw new ArgumentException($"Grain requires a GUID id. \"{this.GetPrimaryKey()}\" is not valid");
                 }
 
-                await using (var context = GetDbContext())
+                await using var context = GetDbContext();
+                Entity = await LoadEntityAsync(context, Id);
+                if (Entity != null)
                 {
-                    Entity = await LoadEntityAsync(context, Id);
-                    if (Entity != null)
-                    {
-                        await HandleEntityLoadedAsync(context, Entity); 
-                    }
+                    await HandleEntityLoadedAsync(context, Entity); 
                 }
             }
             catch (Exception e)

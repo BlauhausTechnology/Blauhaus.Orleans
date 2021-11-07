@@ -11,8 +11,8 @@ using Moq;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
-    public class BaseActorGrainTest<TGrainResolver, TGrainResolverMockBuilder, TSut, TModel, TModelBuilder, TActor, TActorMockBuilder, TDto> : BaseGuidGrainTest<TSut> 
-        where TSut : BaseActorGrain<TGrainResolver, TActor, TModel, TDto>, IGrainWithGuidKey
+    public class BaseActorGrainTest<TGrain, TGrainResolver, TGrainResolverMockBuilder , TModel, TModelBuilder, TActor, TActorMockBuilder, TDto> : BaseGuidGrainTest<TGrain> 
+        where TGrain : BaseActorGrain<TGrainResolver, TActor, TModel, TDto>
         where TActor : class, IDtoModelActor<TModel, TDto, Guid>
         where TModel : class, IHasId<Guid>
         where TActorMockBuilder : BaseMockBuilder<TActorMockBuilder, TActor>, new()

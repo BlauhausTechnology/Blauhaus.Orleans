@@ -24,9 +24,9 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     public abstract class BaseGrainTest<TSut, TId> : BaseServiceTest<TSut> 
         where TSut : Grain
     {
-        protected TestKitSilo Silo;
+        protected TestKitSilo Silo = null!;
 
-        protected TId GrainId;
+        protected TId GrainId = default!;
 
         
         //Users

@@ -13,8 +13,8 @@ using Orleans;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
      
-    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGrainTest<TSut, TId> 
-        where TSut : BaseDbGrain<TDbContext, TGrainResolver>
+    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGuidGrainTest<TSut> 
+        where TSut : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
@@ -81,12 +81,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             _dbContextBuilder = new InMemoryDbContextBuilder<TDbContext>();
 
             _dbContextAfter = null;
-            _dbContextBefore = _dbContextBuilder.NewContext;
+            _dbContextBefore = GetNewDbContext();
 
             SetupTime = MockTimeService.Reset();
             RunTime = SetupTime.AddSeconds(122);
 
-            TDbContext FactoryFunc() => _dbContextBuilder.NewContext;
+            TDbContext FactoryFunc() => GetNewDbContext();
             AddSiloService((Func<TDbContext>) FactoryFunc);
 
         }
@@ -105,7 +105,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
             var sut = ConstructGrain();
             
-            _dbContextAfter = _dbContextBuilder.NewContext;
+            _dbContextAfter = GetNewDbContext();
 
             return sut;
         }
@@ -122,11 +122,13 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         
         protected void AdditionalSetup(Action<TDbContext> setupFunc)
         {
-            using (var dbContext =  _dbContextBuilder.NewContext)
+            using (var dbContext =  GetNewDbContext())
             {
                 setupFunc.Invoke(dbContext);
                 dbContext.SaveChanges();
             }
         }
+
+        protected TDbContext GetNewDbContext() => _dbContextBuilder.NewContext;
     }
 }

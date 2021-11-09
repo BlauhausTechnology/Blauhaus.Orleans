@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using AutoMapper.Configuration;
@@ -42,6 +43,32 @@ namespace Blauhaus.Orleans.Ioc
 
             return siloBuilder;
         }
+
+        public static ISiloBuilder ConfigurePersistentStreams(this ISiloBuilder siloBuilder, IConfiguration configuration)
+        {
+            var pullingPeriodConfig = configuration.ExtractClusterValue("PersistentStreamPullingPeriodMs");
+            if (!int.TryParse(pullingPeriodConfig, out var pullingPeriod))
+            {
+                pullingPeriod = 5000;
+            }
+            siloBuilder
+                .AddAzureQueueStreams(StreamProvider.Persistent, configurator =>
+                {
+                    configurator.ConfigureAzureQueue(
+                        ob => ob.Configure(options =>
+                        {
+                            options.ConnectionString = configuration.GetConnectionString("AzureStorage");
+                            options.QueueNames = new List<string> { "azurequeueprovider-0" };
+                        }));
+                    configurator.ConfigureCacheSize(1024);
+                    configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+                    {
+                        options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(pullingPeriod);
+                    }));
+                });
+
+            return siloBuilder;
+        }
         
         public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IConfiguration configuration, string clusterName)
         {
@@ -59,6 +86,11 @@ namespace Blauhaus.Orleans.Ioc
             {
                 siloBuilder.ConfigureEndpoints(Dns.GetHostName(), 11111, 30000);
                 siloBuilder.Configure<ClusterMembershipOptions>(x => x.ValidateInitialConnectivity = false);
+                siloBuilder.Configure<ClusterOptions>(options =>
+                {
+                    options.ServiceId = $"{clusterName}Service";
+                    options.ClusterId = $"{clusterName}Cluster";
+                });
             }
             else
             {

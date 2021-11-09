@@ -1,0 +1,46 @@
+﻿using Blauhaus.TestHelpers.Builders.Base;
+using Blauhaus.TestHelpers.MockBuilders;
+using Orleans;
+using System;
+using Blauhaus.Common.Abstractions;
+using Blauhaus.Domain.Abstractions.Actors;
+using Blauhaus.Orleans.Abstractions.Resolver;
+using Blauhaus.Orleans.Grains;
+using Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver;
+using Moq;
+
+namespace Blauhaus.Orleans.TestHelpers.BaseTests
+{
+    public class BaseActorGrainTest<TGrain, TGrainResolver, TGrainResolverMockBuilder , TModel, TModelBuilder, TActor, TActorMockBuilder, TDto> : BaseGuidGrainTest<TGrain> 
+        where TGrain : BaseActorGrain<TGrainResolver, TActor, TModel, TDto>
+        where TActor : class, IDtoModelActor<TModel, TDto, Guid>
+        where TModel : class, IHasId<Guid>
+        where TActorMockBuilder : BaseMockBuilder<TActorMockBuilder, TActor>, new()
+        where TModelBuilder : class, IBuilder<TModelBuilder, TModel>, new()
+        where TDto : IHasId<Guid>
+        where TGrainResolver : class, IGrainResolver
+        where TGrainResolverMockBuilder : BaseGrainResolverMockBuilder<TGrainResolverMockBuilder, TGrainResolver>, new()
+    {
+
+        protected TActorMockBuilder MockActor = null!;
+        protected TModelBuilder ModelBuilder = null!;
+        protected TGrainResolverMockBuilder MockGrainResolver = null!;
+
+        public override void Setup()
+        {
+            base.Setup();
+
+            GrainId = Guid.NewGuid();
+            ModelBuilder = new TModelBuilder();
+            ModelBuilder.With(x => x.Id, GrainId);
+
+            MockActor = new TActorMockBuilder();
+            MockActor.Mock.Setup(x => x.GetModelAsync()).ReturnsAsync(() => ModelBuilder.Object);
+            AddSiloService(MockActor.Object);
+
+            MockGrainResolver = new TGrainResolverMockBuilder();
+            AddSiloService(MockGrainResolver.Object);
+        }
+       
+    }
+}

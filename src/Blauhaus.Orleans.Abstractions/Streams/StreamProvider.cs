@@ -2,7 +2,7 @@
 {
     public static class StreamProvider
     {
-        public static string Transient = nameof(Transient);
-        public static string Persistent = nameof(Persistent);
+        public const string Transient = nameof(Transient);
+        public const string Persistent = nameof(Persistent);
     }
 }

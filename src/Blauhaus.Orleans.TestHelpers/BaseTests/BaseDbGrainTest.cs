@@ -13,8 +13,8 @@ using Orleans;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
      
-    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGuidGrainTest<TSut> 
-        where TSut : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
+    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGrainTest<TSut, TId> 
+        where TSut : BaseDbGrain<TDbContext, TGrainResolver>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {

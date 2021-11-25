@@ -33,24 +33,20 @@ namespace Blauhaus.Orleans.Grains
         protected TGrain Resolve<TGrain>(long id) where TGrain : IGrainWithIntegerKey
         {
             return GrainResolver.Resolve<TGrain>(id);
-        }
-        
+        } 
 
-        protected IAsyncStream<T> GetTransientStream<T>(Guid streamId, string streamEventName)
+        protected async Task PublishToStreamAsync<T>(string streamName, Guid streamId, string streamEventName, T t)
         {
-            var streamProvider = GetStreamProvider(StreamProvider.Transient);
-            return streamProvider.GetStream<T>(streamId, streamEventName);
-        }
-
-        protected async Task PublishToStreamAsync<T>(Guid streamId, string streamEventName, T t)
-        {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
             await stream.OnNextAsync(t);
         }
 
-        protected async Task SubscribeToStreamAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
+        protected async Task SubscribeToStreamAsync<T>(string streamName, Guid streamId, string streamEventName, Func<T, Task> handler)
         {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
+
             var existingHandles = await stream.GetAllSubscriptionHandles();
             
             if (existingHandles.Count == 0)
@@ -72,9 +68,11 @@ namespace Blauhaus.Orleans.Grains
             }
         }
 
-        protected async Task UnsubscribeFromStreamAsync<T>(Guid streamId, string streamEventName)
+        protected async Task UnsubscribeFromStreamAsync<T>(string streamName, Guid streamId, string streamEventName)
         {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
+
             var existingHandles = await stream.GetAllSubscriptionHandles();
             
             foreach (var streamSubscriptionHandle in existingHandles)

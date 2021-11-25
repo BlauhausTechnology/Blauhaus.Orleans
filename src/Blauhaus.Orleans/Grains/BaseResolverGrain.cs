@@ -35,14 +35,14 @@ namespace Blauhaus.Orleans.Grains
             return GrainResolver.Resolve<TGrain>(id);
         } 
 
-        protected async Task PublishToStreamAsync<T>(string streamName, Guid streamId, string streamEventName, T t)
+        protected async Task PublishToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, T t)
         {
             var streamProvider = GetStreamProvider(streamName);
             var stream = streamProvider.GetStream<T>(streamId, streamEventName);
             await stream.OnNextAsync(t);
         }
 
-        protected async Task SubscribeToStreamAsync<T>(string streamName, Guid streamId, string streamEventName, Func<T, Task> handler)
+        protected async Task SubscribeToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, Func<T, Task> handler)
         {
             var streamProvider = GetStreamProvider(streamName);
             var stream = streamProvider.GetStream<T>(streamId, streamEventName);
@@ -68,13 +68,13 @@ namespace Blauhaus.Orleans.Grains
             }
         }
 
-        protected async Task UnsubscribeFromStreamAsync<T>(string streamName, Guid streamId, string streamEventName)
+        protected async Task UnsubscribeFromStreamAsync<T>(string streamName, Guid streamId, string? streamEventName = null)
         {
             var streamProvider = GetStreamProvider(streamName);
             var stream = streamProvider.GetStream<T>(streamId, streamEventName);
 
             var existingHandles = await stream.GetAllSubscriptionHandles();
-            
+
             foreach (var streamSubscriptionHandle in existingHandles)
             {
                 await streamSubscriptionHandle.UnsubscribeAsync();

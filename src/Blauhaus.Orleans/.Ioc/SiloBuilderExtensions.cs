@@ -41,7 +41,7 @@ namespace Blauhaus.Orleans.Ioc
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
                 .AddAzureTableGrainStorage("PubSubStore", options =>
                 {
-                    options.ConnectionString = configuration.GetConnectionString("AzureStorage");
+                    options.ConfigureTableServiceClient(configuration.GetConnectionString("AzureStorage"));
                     options.UseJson = true;
                 });
 
@@ -61,7 +61,7 @@ namespace Blauhaus.Orleans.Ioc
                     configurator.ConfigureAzureQueue(
                         ob => ob.Configure(options =>
                         {
-                            options.ConnectionString = configuration.GetConnectionString("AzureStorage");
+                            options.ConfigureQueueServiceClient(configuration.GetConnectionString("AzureStorage"));
                             options.QueueNames = new List<string> { "azurequeueprovider-0" };
                         }));
                     configurator.ConfigureCacheSize(1024);
@@ -82,7 +82,7 @@ namespace Blauhaus.Orleans.Ioc
 
             siloBuilder.UseAzureStorageClustering(options =>
             {
-                options.ConnectionString = connectionString;
+                options.ConfigureTableServiceClient(connectionString);
                 options.TableName = clusterName + "ClusterInfo";
             });
              
@@ -121,7 +121,7 @@ namespace Blauhaus.Orleans.Ioc
             siloBuilder
                 .UseAzureStorageClustering(options =>
                 {
-                    options.ConnectionString = clusterConfig.AzureStorageConnectionString;
+                    options.ConfigureTableServiceClient(clusterConfig.AzureStorageConnectionString);
                     options.TableName = clusterConfig.StorageTableName;
                 })
                 .ConfigureApplicationParts(parts =>
@@ -132,7 +132,8 @@ namespace Blauhaus.Orleans.Ioc
 
             siloBuilder
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient, options => options.FireAndForgetDelivery = true)
-                .AddAzureTableGrainStorage("PubSubStore", options => options.ConnectionString = clusterConfig.AzureStorageConnectionString);
+                .AddAzureTableGrainStorage("PubSubStore", options => 
+                    options.ConfigureTableServiceClient(clusterConfig.AzureStorageConnectionString));
 
             if (clusterConfig.BuildConfig.Equals(BuildConfig.Debug))
             {

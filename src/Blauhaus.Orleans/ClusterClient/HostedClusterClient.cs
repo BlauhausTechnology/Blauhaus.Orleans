@@ -23,7 +23,7 @@ namespace Blauhaus.Orleans.ClusterClient
                 .AddSimpleMessageStreamProvider(StreamProvider.Transient)
                 .UseAzureStorageClustering(options =>
                 {
-                    options.ConnectionString = clusterConfig.AzureStorageConnectionString;
+                    options.ConfigureTableServiceClient(clusterConfig.AzureStorageConnectionString);
                     options.TableName = clusterConfig.StorageTableName;
                 })
                 .Configure<ClusterOptions>(options =>

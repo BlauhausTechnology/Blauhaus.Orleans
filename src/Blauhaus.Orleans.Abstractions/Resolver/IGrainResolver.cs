@@ -1,5 +1,6 @@
 ﻿using System;
 using Blauhaus.Orleans.Abstractions.Grains;
+using Blauhaus.Orleans.Abstractions.Identity;
 using Orleans;
 
 namespace Blauhaus.Orleans.Abstractions.Resolver
@@ -12,5 +13,7 @@ namespace Blauhaus.Orleans.Abstractions.Resolver
         TGrain Resolve<TGrain>(Guid id) where TGrain : IGrainWithGuidKey;
         TGrain Resolve<TGrain>(string id) where TGrain : IGrainWithStringKey;
         TGrain Resolve<TGrain>(long id) where TGrain : IGrainWithIntegerKey;
+
+        TGrain Resolve<TGrain>(GrainId grainId) where TGrain : class, IGrainWithGuidKey;
     }
 }

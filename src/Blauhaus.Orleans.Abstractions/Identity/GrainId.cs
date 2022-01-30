@@ -29,6 +29,7 @@ public class GrainId : BaseValueObject<GrainId>
 
     public override string ToString()
     {
-        return $"{InterfaceTypeName} (Id {Id})";
+        var shortName = InterfaceTypeName.Substring(InterfaceTypeName.LastIndexOf('.') + 1);
+        return $"{shortName} (Id {Id})";
     }
 }

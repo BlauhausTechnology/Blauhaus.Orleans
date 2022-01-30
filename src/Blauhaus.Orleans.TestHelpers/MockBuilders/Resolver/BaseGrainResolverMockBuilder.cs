@@ -72,9 +72,16 @@ namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
             return (TBuilder) this;
         }
 
-        public void VerifyResolve<TGrain>(Guid id) where TGrain : IGrainWithGuidKey
+        public void VerifyResolve<TGrain>(Guid id, int? times =null) where TGrain : IGrainWithGuidKey
         {
-            Mock.Verify(x => x.Resolve<TGrain>(id));
+            if (times == null)
+            {
+                Mock.Verify(x => x.Resolve<TGrain>(id));
+            }
+            else
+            {
+                Mock.Verify(x => x.Resolve<TGrain>(id), Times.Exactly(times.Value));
+            }
         }
     }
 }

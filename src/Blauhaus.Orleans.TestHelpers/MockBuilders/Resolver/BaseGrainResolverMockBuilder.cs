@@ -20,7 +20,7 @@ namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
             return (TBuilder) this;
         }
 
-        public TBuilder Where_Resolve_returns<TGrain>(TGrain grain, GrainId grainId) where TGrain : class, IGrainWithGuidKey
+        public TBuilder Where_Resolve_returns<TGrain>(TGrain grain, GrainId grainId) where TGrain : class, IGrainWithStringKey
         {
             Mock.Setup(x => x.Resolve<TGrain>(grainId)).Returns(grain);
             return (TBuilder) this;
@@ -45,20 +45,17 @@ namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
 
         public TBuilder Where_Resolve_returns<TGrain>(TGrain grain) where TGrain : class, IGrainWithGuidKey
         {
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(grain);
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<GrainId>())).Returns(grain);
+            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(grain); 
             return (TBuilder) this;
         }
         public TBuilder Where_Resolve_returns<TGrain>(Func<TGrain> grain) where TGrain : class, IGrainWithGuidKey
         {
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(grain);
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<GrainId>())).Returns(grain);
+            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(grain); 
             return (TBuilder) this;
         }
         public TBuilder Where_Resolve_returns<TGrain>(IBuilder<TGrain> grain) where TGrain : class, IGrainWithGuidKey
         {
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(()=> grain.Object);
-            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<GrainId>())).Returns(()=> grain.Object);
+            Mock.Setup(x => x.Resolve<TGrain>(It.IsAny<Guid>())).Returns(()=> grain.Object); 
             return (TBuilder) this;
         }
         

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using Blauhaus.Orleans.Abstractions.Grains;
 using Blauhaus.Orleans.Abstractions.Identity;
 using Blauhaus.Orleans.Abstractions.Resolver;
@@ -55,6 +56,11 @@ namespace Blauhaus.Orleans.Resolver
             }
 
             return grainAsRequiredType;
+        }
+
+        public TGrain Resolve<TGrain, TId>(TId seralizableId) where TGrain : class, IGrainWithStringKey
+        {
+            return Resolve<TGrain>(JsonSerializer.Serialize(seralizableId));
         }
 
         public void Initialize(Func<IGrainFactory> initializer)

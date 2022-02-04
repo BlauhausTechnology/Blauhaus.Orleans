@@ -8,7 +8,8 @@ using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseResolverGrain<TGrainResolver> : Grain where TGrainResolver : IGrainResolver
+    public abstract class BaseResolverGrain<TGrainResolver> : Grain
+        where TGrainResolver : IGrainResolver
     {
         protected readonly TGrainResolver GrainResolver;
         

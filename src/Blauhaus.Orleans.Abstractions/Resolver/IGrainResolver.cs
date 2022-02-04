@@ -14,7 +14,7 @@ namespace Blauhaus.Orleans.Abstractions.Resolver
         TGrain Resolve<TGrain>(string id) where TGrain : IGrainWithStringKey;
         TGrain Resolve<TGrain>(long id) where TGrain : IGrainWithIntegerKey;
 
-        TGrain Resolve<TGrain>(GrainId grainId) where TGrain : class, IGrainWithGuidKey;
+        TGrain Resolve<TGrain>(GrainId grainId) where TGrain : class, IGrainWithStringKey;
         TGrain Resolve<TGrain, TId>(TId seralizableId) where TGrain : class, IGrainWithStringKey;
     }
 }

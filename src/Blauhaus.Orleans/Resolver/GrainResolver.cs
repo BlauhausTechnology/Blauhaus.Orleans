@@ -36,7 +36,7 @@ namespace Blauhaus.Orleans.Resolver
                 .GetGrain<TGrain>(id);
         }
 
-        public TGrain Resolve<TGrain>(GrainId grainId) where TGrain : class, IGrainWithGuidKey
+        public TGrain Resolve<TGrain>(GrainId grainId) where TGrain : class, IGrainWithStringKey
         {
             var grainInterfaceType = Type.GetType(grainId.InterfaceTypeName);
             if (grainInterfaceType == null)

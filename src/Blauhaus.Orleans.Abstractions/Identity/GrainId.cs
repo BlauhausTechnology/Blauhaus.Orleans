@@ -8,14 +8,14 @@ public class GrainId : BaseValueObject<GrainId>
 {
 
     [JsonConstructor]
-    public GrainId(string interfaceTypeName, Guid id)
+    public GrainId(string interfaceTypeName, string id)
     {
         InterfaceTypeName = interfaceTypeName;
         Id = id;
     }
 
     public string InterfaceTypeName { get; }
-    public Guid Id { get; }
+    public string Id { get; }
 
     protected override int GetHashCodeCore()
     {

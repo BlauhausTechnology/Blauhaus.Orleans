@@ -12,14 +12,7 @@ namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
     public abstract class BaseGrainResolverMockBuilder<TBuilder, TMock> : BaseMockBuilder<TBuilder, TMock>
         where TBuilder : BaseGrainResolverMockBuilder<TBuilder, TMock>
         where TMock : class, IGrainResolver
-    {
-
-        public TBuilder Where_Resolve_returns<TGrain, TId>(TGrain grain, TId id) where TGrain : class, IGrainWithStringKey
-        {
-            Mock.Setup(x => x.Resolve<TGrain, TId>(id)).Returns(grain);
-            return (TBuilder) this;
-        }
-
+    { 
         public TBuilder Where_Resolve_returns<TGrain>(TGrain grain, GrainId grainId) where TGrain : class, IGrainWithStringKey
         {
             Mock.Setup(x => x.Resolve<TGrain>(grainId)).Returns(grain);

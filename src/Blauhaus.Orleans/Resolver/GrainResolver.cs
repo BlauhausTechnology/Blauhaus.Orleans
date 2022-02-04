@@ -57,12 +57,7 @@ namespace Blauhaus.Orleans.Resolver
 
             return grainAsRequiredType;
         }
-
-        public TGrain Resolve<TGrain, TId>(TId seralizableId) where TGrain : class, IGrainWithStringKey
-        {
-            return Resolve<TGrain>(JsonSerializer.Serialize(seralizableId));
-        }
-
+         
         public void Initialize(Func<IGrainFactory> initializer)
         {
             _grainFactory = initializer;

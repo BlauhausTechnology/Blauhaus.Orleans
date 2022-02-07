@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Analytics.TestHelpers.MockBuilders;
 using Blauhaus.Auth.Abstractions.User;
@@ -10,6 +11,8 @@ using Blauhaus.TestHelpers.BaseTests;
 using Blauhaus.TestHelpers.MockBuilders;
 using Blauhaus.Time.Abstractions;
 using Blauhaus.Time.TestHelpers.MockBuilders;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using Orleans;
@@ -56,7 +59,11 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
         protected override TSut ConstructSut()
         {
-            return ConstructGrain();
+            var provider = Silo.ServiceProvider;
+            BeforeConstructSut(provider);
+            var sut = ConstructGrain();
+            Task.Run(async () => await AfterConstructSutAsync(sut)).Wait();
+            return sut;
         }
 
         protected abstract TSut ConstructGrain();

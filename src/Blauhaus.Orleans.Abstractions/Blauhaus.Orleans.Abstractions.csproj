@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.12.6" />
-    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="1.7.5" />
-    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.12.6" />
+    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.13.4" />
+    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="1.7.10" />
+    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.12.7" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.6.0" />
   </ItemGroup>
 

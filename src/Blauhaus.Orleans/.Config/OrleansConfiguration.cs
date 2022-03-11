@@ -16,7 +16,7 @@ namespace Blauhaus.Orleans.Config
             AzureStorageConnectionString = azureAzureStorageConnectionString;
 
             ClusterName = clusterName;
-            StorageTableName = clusterName + "ClusterInfo_";
+            StorageTableName = clusterName + "ClusterInfo";
             ServiceId = clusterName + "Service";
             ClusterId = clusterName + "Cluster";
         }

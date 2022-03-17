@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Domain.Abstractions.CommandHandlers;
@@ -45,6 +46,15 @@ namespace Blauhaus.Orleans.Hubs
             where TCommand : notnull
         {
             return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+         
+        protected Task<Response<TResponse>> HandleGuidGrainCommandAsync<TResponse, TIResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, Guid grainId, string? messageTemplate = null, params object[] args)
+            where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TIResponse, TCommand, IConnectedUser>
+            where TCommand : notnull
+            where TResponse : TIResponse
+        {
+            return HandleCommandAsync<TResponse, TIResponse, TCommand, Guid>(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
          
         protected Task<Response<TResponse>> HandleGuidGrainCommandForUserAsync<TResponse, TCommand, TGrain>(
@@ -104,7 +114,17 @@ namespace Blauhaus.Orleans.Hubs
         {
             return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
-          
+        
+        
+        protected Task<Response<TResponse>> HandleStringGrainCommandAsync<TResponse, TIResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, string grainId, string? messageTemplate = null, params object[] args)
+            where TGrain : IGrainWithStringKey, IAuthenticatedCommandHandler<TIResponse, TCommand, IConnectedUser>
+            where TCommand : notnull
+            where TResponse : TIResponse
+        {
+            return HandleCommandAsync<TResponse, TIResponse, TCommand, string>(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+
         #endregion
 
         # region Handle void commands for string grains

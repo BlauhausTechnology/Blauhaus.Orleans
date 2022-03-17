@@ -1,5 +1,4 @@
 ﻿using System;
-using Blauhaus.Orleans.Grains;
 using Orleans;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests

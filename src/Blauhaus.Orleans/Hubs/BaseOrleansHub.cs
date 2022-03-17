@@ -13,13 +13,12 @@ using Orleans;
 
 namespace Blauhaus.Orleans.Hubs
 {
-    public abstract class BaseOrleansHub<THub> : BaseSignalRHub<THub>
-        where THub : BaseOrleansHub<THub>
+    public abstract class BaseOrleansHub : BaseSignalRHub
     {
         protected readonly IClusterClient ClusterClient;
 
         protected BaseOrleansHub(
-            IAnalyticsLogger<THub> logger, 
+            IAnalyticsLogger logger, 
             IServiceLocator serviceLocator, 
             IConnectedUserFactory connectedUserFactory,
             IClusterClient clusterClient) 
@@ -85,7 +84,6 @@ namespace Blauhaus.Orleans.Hubs
         }
 
         #endregion
-
         
 
         # region Handle commands for string grains with return value

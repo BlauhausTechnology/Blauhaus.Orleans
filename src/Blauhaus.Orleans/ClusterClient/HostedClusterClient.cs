@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Orleans;
 using Orleans.Configuration;

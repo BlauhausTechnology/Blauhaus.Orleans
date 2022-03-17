@@ -1,5 +1,4 @@
-﻿using Blauhaus.Common.ValueObjects.BuildConfigs;
-using Blauhaus.Orleans.Abstractions.Resolver;
+﻿using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.ClusterClient;
 using Blauhaus.Orleans.Config;
 using Blauhaus.Orleans.Extensions;

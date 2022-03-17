@@ -22,7 +22,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseEntityGrainTests
 {
     public abstract class BaseEntityGrainDeleteTests<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver, TDto> 
         : BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver>
-        where TGrain: BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver>, IVoidAuthenticatedCommandHandler<DeleteCommand, IAuthenticatedUser> 
+        where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IVoidAuthenticatedCommandHandler<DeleteCommand, IAuthenticatedUser> 
         where TEntity : BaseServerEntity, IDtoOwner<TDto>
         where TEntityBuilder : BaseServerEntityBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext

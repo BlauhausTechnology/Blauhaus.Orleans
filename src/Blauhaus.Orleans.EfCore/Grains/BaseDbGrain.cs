@@ -1,29 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions;
-using Blauhaus.Analytics.Abstractions.Extensions;
-using Blauhaus.Analytics.Abstractions.Service;
-using Blauhaus.Auth.Abstractions.Errors;
-using Blauhaus.Auth.Abstractions.Extensions;
-using Blauhaus.Auth.Abstractions.User;
-using Blauhaus.Domain.Abstractions.Commands;
-using Blauhaus.Errors;
-using Blauhaus.Errors.Extensions;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.Grains;
-using Blauhaus.Responses;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Orleans;
-using static Blauhaus.Errors.Error;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseDbGrain<TGrain, TDbContext, TGrainResolver> : BaseResolverGrain<TGrain, TGrainResolver>
+    public abstract class BaseDbGrain<TDbContext, TGrainResolver> : BaseResolverGrain<TGrainResolver>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
-        where TGrain : BaseDbGrain<TGrain, TDbContext, TGrainResolver>
     {
 
         protected readonly Func<TDbContext> GetDbContext;
@@ -33,7 +19,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
 
         protected BaseDbGrain(
             Func<TDbContext> dbContextFactory,
-            IAnalyticsLogger<TGrain> logger,
+            IAnalyticsLogger logger,
             ITimeService timeService,
             TGrainResolver grainResolver)
             : base(logger, grainResolver)
@@ -284,9 +270,8 @@ namespace Blauhaus.Orleans.EfCore.Grains
 
     }
 
-    public abstract class BaseDbGrain<TGrain, TDbContext> : BaseGrain<TGrain>
+    public abstract class BaseDbGrain<TDbContext> : BaseGrain
         where TDbContext : DbContext
-        where TGrain : BaseDbGrain<TGrain, TDbContext>
     {
         protected readonly Func<TDbContext> GetDbContext;
         protected readonly ITimeService TimeService;
@@ -294,7 +279,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         protected DateTime Now => TimeService.CurrentUtcTime;
 
         protected BaseDbGrain(
-            IAnalyticsLogger<TGrain> logger,
+            IAnalyticsLogger logger,
             Func<TDbContext> dbContextFactory,
             ITimeService timeService)
             : base(logger)

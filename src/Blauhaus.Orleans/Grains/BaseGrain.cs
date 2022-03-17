@@ -7,12 +7,11 @@ using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseGrain<TGrain> : Grain 
-        where TGrain : BaseGrain<TGrain>
+    public abstract class BaseGrain : Grain 
     {
-        protected readonly IAnalyticsLogger<TGrain> Logger;
+        protected readonly IAnalyticsLogger Logger;
 
-        protected BaseGrain(IAnalyticsLogger<TGrain> logger)
+        protected BaseGrain(IAnalyticsLogger logger)
         {
             Logger = logger;
         }

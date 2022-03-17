@@ -2,21 +2,17 @@
 using System;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Orleans;
-using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions;
-using Blauhaus.Orleans.Abstractions.Streams;
-using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseResolverGrain<TGrain, TGrainResolver> : BaseGrain<TGrain>
-        where TGrain:BaseResolverGrain<TGrain, TGrainResolver>
+    public abstract class BaseResolverGrain<TGrainResolver> : BaseGrain
         where TGrainResolver : IGrainResolver
     {
         protected readonly TGrainResolver GrainResolver;
         
         protected BaseResolverGrain(
-            IAnalyticsLogger<TGrain> logger,
+            IAnalyticsLogger logger,
             TGrainResolver grainResolver) : base(logger)
         {
             GrainResolver = grainResolver;

@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
-using AutoMapper.Configuration;
 using Blauhaus.Common.ValueObjects.BuildConfigs;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Blauhaus.Orleans.Config;
 using Blauhaus.Orleans.Extensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;

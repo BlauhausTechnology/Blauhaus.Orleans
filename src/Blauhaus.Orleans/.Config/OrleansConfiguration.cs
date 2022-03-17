@@ -1,5 +1,4 @@
 ﻿using Blauhaus.Common.ValueObjects.BuildConfigs;
-using Microsoft.Extensions.Configuration;
 
 namespace Blauhaus.Orleans.Config
 {

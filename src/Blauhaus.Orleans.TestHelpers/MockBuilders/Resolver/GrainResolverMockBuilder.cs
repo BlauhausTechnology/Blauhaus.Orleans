@@ -1,5 +1,4 @@
 ﻿using Blauhaus.Orleans.Abstractions.Resolver;
-using Blauhaus.Orleans.Grains;
 
 namespace Blauhaus.Orleans.TestHelpers.MockBuilders.Resolver
 {

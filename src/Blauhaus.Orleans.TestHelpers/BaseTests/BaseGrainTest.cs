@@ -11,14 +11,11 @@ using Blauhaus.TestHelpers.BaseTests;
 using Blauhaus.TestHelpers.MockBuilders;
 using Blauhaus.Time.Abstractions;
 using Blauhaus.Time.TestHelpers.MockBuilders;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using Orleans;
 using Orleans.Core;
 using Orleans.TestKit;
-using Orleans.TestKit.Services;
 using Orleans.TestKit.Streams;
 
 namespace Blauhaus.Orleans.TestHelpers.BaseTests

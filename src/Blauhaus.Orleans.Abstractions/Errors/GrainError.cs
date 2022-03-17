@@ -1,5 +1,4 @@
-﻿using System;
-using Blauhaus.Errors;
+﻿using Blauhaus.Errors;
 
 namespace Blauhaus.Orleans.Abstractions.Errors;
 

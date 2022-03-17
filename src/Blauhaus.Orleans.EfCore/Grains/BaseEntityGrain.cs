@@ -4,38 +4,27 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Analytics.Abstractions.Extensions;
-using Blauhaus.Analytics.Abstractions.Service;
-using Blauhaus.Auth.Abstractions.Errors;
-using Blauhaus.Auth.Abstractions.Extensions;
-using Blauhaus.Auth.Abstractions.User;
-using Blauhaus.Domain.Abstractions.Commands;
 using Blauhaus.Domain.Abstractions.DtoHandlers;
 using Blauhaus.Domain.Abstractions.Entities;
-using Blauhaus.Domain.Abstractions.Errors;
 using Blauhaus.Domain.Server.Entities;
 using Blauhaus.Errors;
 using Blauhaus.Orleans.Abstractions.Errors;
-using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.Orleans.Abstractions.Resolver;
-using Blauhaus.Orleans.Resolver;
-using Blauhaus.Responses;
 using Blauhaus.Time.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Orleans;
-using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseEntityGrain<TGrain, TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity
         where TDto : IClientEntity<Guid>
         where TGrainResolver : IGrainResolver
-        where TGrain : BaseEntityGrain<TGrain, TDbContext, TEntity, TDto, TGrainResolver>
     {
 
         protected BaseEntityGrain(
-            IAnalyticsLogger<TGrain> logger,
+            IAnalyticsLogger logger,
             Func<TDbContext> dbContextFactory,
             ITimeService timeService,
             TGrainResolver grainResolver)
@@ -66,11 +55,10 @@ namespace Blauhaus.Orleans.EfCore.Grains
     }
     
     
-    public abstract class BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TGrain, TDbContext, TGrainResolver>, IGrainWithGuidKey
+    public abstract class BaseEntityGrain<TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity
         where TGrainResolver : IGrainResolver
-        where TGrain : BaseDbGrain<TGrain, TDbContext, TGrainResolver>
     {
         protected TEntity? Entity;
 
@@ -90,7 +78,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
         protected Guid Id;
         
         protected BaseEntityGrain(
-            IAnalyticsLogger<TGrain> logger,
+            IAnalyticsLogger logger,
             Func<TDbContext> dbContextFactory, 
             ITimeService timeService,
             TGrainResolver grainResolver) 

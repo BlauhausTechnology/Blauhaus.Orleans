@@ -1,35 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Analytics.Abstractions.Extensions;
-using Blauhaus.Analytics.Abstractions.Service;
-using Blauhaus.Auth.Abstractions.Errors;
-using Blauhaus.Auth.Abstractions.Extensions;
-using Blauhaus.Auth.Abstractions.User;
 using Blauhaus.Common.Abstractions;
 using Blauhaus.Domain.Abstractions.Actors;
-using Blauhaus.Domain.Abstractions.Commands;
-using Blauhaus.Errors;
-using Blauhaus.Errors.Extensions;
 using Blauhaus.Orleans.Abstractions.Errors;
 using Blauhaus.Orleans.Abstractions.Grains;
 using Blauhaus.Orleans.Abstractions.Resolver;
-using Blauhaus.Responses;
 using Orleans;
-using Response = Blauhaus.Responses.Response;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseActorGrain<TGrain, TGrainResolver, TActor, TModel, TDto> : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel>, IActorGrain<TModel, TDto>
+    public abstract class BaseActorGrain<TGrainResolver, TActor, TModel, TDto> : BaseActorGrain<TGrainResolver, TActor, TModel>, IActorGrain<TModel, TDto>
         where TModel : IHasId<Guid>
         where TActor : IDtoModelActor<TModel, TDto, Guid>
         where TDto : IHasId<Guid>
         where TGrainResolver : IGrainResolver
-        where TGrain : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel, TDto>
     {
         protected BaseActorGrain(
-            IAnalyticsLogger<TGrain> logger, 
+            IAnalyticsLogger logger, 
             TGrainResolver grainResolver, 
             TActor actor) 
                 : base(logger, grainResolver, actor)
@@ -42,17 +31,16 @@ namespace Blauhaus.Orleans.Grains
         }
     }
 
-    public abstract class BaseActorGrain<TGrain, TGrainResolver, TActor, TModel> : BaseResolverGrain<TGrain, TGrainResolver>, IActorGrain<TModel>
+    public abstract class BaseActorGrain<TGrainResolver, TActor, TModel> : BaseResolverGrain<TGrainResolver>, IActorGrain<TModel>
         where TModel : IHasId<Guid>
         where TActor : IModelActor<TModel, Guid>
         where TGrainResolver : IGrainResolver
-        where TGrain : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel>
     {
         protected readonly TActor Actor;
         protected Guid Id;
 
         protected BaseActorGrain(
-            IAnalyticsLogger<TGrain> logger, 
+            IAnalyticsLogger logger, 
             TGrainResolver grainResolver,
             TActor actor) 
             : base(logger, grainResolver)

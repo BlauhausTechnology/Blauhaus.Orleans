@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Blauhaus.Analytics.Abstractions.Service;
+using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Domain.Abstractions.CommandHandlers;
 using Blauhaus.Ioc.Abstractions;
 using Blauhaus.Responses;
@@ -13,75 +13,120 @@ using Orleans;
 
 namespace Blauhaus.Orleans.Hubs
 {
-    public abstract class BaseOrleansHub : BaseSignalRHub
+    public abstract class BaseOrleansHub<THub> : BaseSignalRHub<THub>
+        where THub : BaseOrleansHub<THub>
     {
         protected readonly IClusterClient ClusterClient;
 
         protected BaseOrleansHub(
+            IAnalyticsLogger<THub> logger, 
             IServiceLocator serviceLocator, 
-            IAnalyticsService analyticsService, 
             IConnectedUserFactory connectedUserFactory,
             IClusterClient clusterClient) 
-                : base(serviceLocator, analyticsService, connectedUserFactory)
+                : base(logger, serviceLocator, connectedUserFactory)
         {
             ClusterClient = clusterClient;
         }
 
 
-        //Handle commands with return value
+        # region Handle commands for Guid grains with return value
 
-        protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver)
+        protected Task<Response<TResponse>> HandleGuidGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver,
+            string? messageTemplate = null, params object[] args)
                 where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
                 where TCommand : notnull
         {
-            return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
 
-        protected Task<Response<TResponse>> HandleGrainCommandAsync<TResponse, TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers, Guid grainId)
+        protected Task<Response<TResponse>> HandleGuidGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, Guid grainId, string? messageTemplate = null, params object[] args)
             where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
             where TCommand : notnull
         {
-            return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
          
-        protected Task<Response<TResponse>> HandleGrainCommandForUserAsync<TResponse, TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers)
+        protected Task<Response<TResponse>> HandleGuidGrainCommandForUserAsync<TResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, string? messageTemplate = null, params object[] args)
             where TGrain : IGrainWithGuidKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
             where TCommand : notnull
         {
-            return HandleCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
 
+        #endregion
 
-        
-        //Handle void commands 
-       
+        # region Handle void commands for Guid grains
+
         protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver)
+            TCommand command, Dictionary<string, object> headers, Expression<Func<TCommand, IConnectedUser, Guid>> idResolver, string? messageTemplate = null, params object[] args)
             where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
             where TCommand : notnull
         {
-            return HandleVoidCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleVoidCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
 
         protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers, Guid grainId)
+            TCommand command, Dictionary<string, object> headers, Guid grainId, string? messageTemplate = null, params object[] args)
             where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
             where TCommand : notnull
         {
-            return HandleVoidCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleVoidCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
 
         protected Task<Response> HandleVoidGrainCommandForUserAsync<TCommand, TGrain>(
-            TCommand command, IDictionary<string, string> headers)
+            TCommand command, Dictionary<string, object> headers, string? messageTemplate = null, params object[] args)
             where TGrain : IGrainWithGuidKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
             where TCommand : notnull
         {
-            return HandleVoidCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id));
+            return HandleVoidCommandAsync(command, headers, (comm, user) => user.UserId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
         }
 
+        #endregion
 
+        
+
+        # region Handle commands for string grains with return value
+
+        protected Task<Response<TResponse>> HandleStringGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, Expression<Func<TCommand, IConnectedUser, string>> idResolver,
+            string? messageTemplate = null, params object[] args)
+                where TGrain : IGrainWithStringKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+                where TCommand : notnull
+        {
+            return HandleCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+
+        protected Task<Response<TResponse>> HandleStringGrainCommandAsync<TResponse, TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, string grainId, string? messageTemplate = null, params object[] args)
+            where TGrain : IGrainWithStringKey, IAuthenticatedCommandHandler<TResponse, TCommand, IConnectedUser>
+            where TCommand : notnull
+        {
+            return HandleCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+          
+        #endregion
+
+        # region Handle void commands for string grains
+
+        protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, Expression<Func<TCommand, IConnectedUser, string>> idResolver, string? messageTemplate = null, params object[] args)
+            where TGrain : IGrainWithStringKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
+            where TCommand : notnull
+        {
+            return HandleVoidCommandAsync(command, headers, idResolver, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+
+        protected Task<Response> HandleVoidGrainCommandAsync<TCommand, TGrain>(
+            TCommand command, Dictionary<string, object> headers, string grainId, string? messageTemplate = null, params object[] args)
+            where TGrain : IGrainWithStringKey, IVoidAuthenticatedCommandHandler<TCommand, IConnectedUser>
+            where TCommand : notnull
+        {
+            return HandleVoidCommandAsync(command, headers, (x,y) => grainId, id => ClusterClient.GetGrain<TGrain>(id), messageTemplate, args);
+        }
+         
+        #endregion
     }
 }

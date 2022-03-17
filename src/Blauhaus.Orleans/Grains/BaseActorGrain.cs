@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Analytics.Abstractions.Extensions;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Auth.Abstractions.Errors;
@@ -11,6 +12,7 @@ using Blauhaus.Domain.Abstractions.Actors;
 using Blauhaus.Domain.Abstractions.Commands;
 using Blauhaus.Errors;
 using Blauhaus.Errors.Extensions;
+using Blauhaus.Orleans.Abstractions.Errors;
 using Blauhaus.Orleans.Abstractions.Grains;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Responses;
@@ -19,17 +21,18 @@ using Response = Blauhaus.Responses.Response;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseActorGrain<TGrainResolver, TActor, TModel, TDto> : BaseActorGrain<TGrainResolver, TActor, TModel>, IActorGrain<TModel, TDto>
+    public abstract class BaseActorGrain<TGrain, TGrainResolver, TActor, TModel, TDto> : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel>, IActorGrain<TModel, TDto>
         where TModel : IHasId<Guid>
         where TActor : IDtoModelActor<TModel, TDto, Guid>
         where TDto : IHasId<Guid>
         where TGrainResolver : IGrainResolver
+        where TGrain : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel, TDto>
     {
         protected BaseActorGrain(
-            IAnalyticsService analyticsService, 
+            IAnalyticsLogger<TGrain> logger, 
             TGrainResolver grainResolver, 
             TActor actor) 
-                : base(analyticsService, grainResolver, actor)
+                : base(logger, grainResolver, actor)
         {
         }
 
@@ -39,22 +42,21 @@ namespace Blauhaus.Orleans.Grains
         }
     }
 
-    public abstract class BaseActorGrain<TGrainResolver, TActor, TModel> : BaseResolverGrain<TGrainResolver>, IActorGrain<TModel>
+    public abstract class BaseActorGrain<TGrain, TGrainResolver, TActor, TModel> : BaseResolverGrain<TGrain, TGrainResolver>, IActorGrain<TModel>
         where TModel : IHasId<Guid>
         where TActor : IModelActor<TModel, Guid>
         where TGrainResolver : IGrainResolver
+        where TGrain : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel>
     {
-        protected readonly IAnalyticsService AnalyticsService;
         protected readonly TActor Actor;
         protected Guid Id;
 
         protected BaseActorGrain(
-            IAnalyticsService analyticsService, 
+            IAnalyticsLogger<TGrain> logger, 
             TGrainResolver grainResolver,
             TActor actor) 
-            : base(grainResolver)
+            : base(logger, grainResolver)
         {
-            AnalyticsService = analyticsService;
             Actor = actor;
         }
 
@@ -69,12 +71,13 @@ namespace Blauhaus.Orleans.Grains
 
                 if (Id == Guid.Empty)
                 {
+                    Logger.LogError(GrainError.InvalidIdentity);
                     throw new ArgumentException($"Grain requires a GUID id. \"{this.GetPrimaryKey()}\" is not valid");
                 }
             }
             catch (Exception e)
             {
-                AnalyticsService.LogException(this, e);
+                Logger.LogError(GrainError.ActivationFailed, e);
                 throw;
             }
         }
@@ -89,92 +92,92 @@ namespace Blauhaus.Orleans.Grains
             await Actor.DisposeAsync();
         }
         
-        protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response>> func)
-        {
-            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
+        //protected async Task<Response> TryExecuteCommandAsync<TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response>> func)
+        //{
+        //    using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
 
-            try
-            {
-                if (command is IAdminCommand)
-                {
-                    if (!user.IsAdminUser())
-                    {
-                        return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
-                    }
-                }
-                return await func.Invoke();
-            }
-            catch (Exception e)
-            {
-                if (e.IsErrorException())
-                {
-                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
-                }
-                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                return Response.Failure(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
-            }
-        }
-        protected async Task<Response> TryExecuteAsync(Func<Task<Response>> func, string operationName, Dictionary<string, object>? properties = null)
-        {
-            using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
+        //    try
+        //    {
+        //        if (command is IAdminCommand)
+        //        {
+        //            if (!user.IsAdminUser())
+        //            {
+        //                return AnalyticsService.TraceErrorResponse(this, AuthError.NotAuthorized);
+        //            }
+        //        }
+        //        return await func.Invoke();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        if (e.IsErrorException())
+        //        {
+        //            return AnalyticsService.TraceErrorResponse(this, e.ToError());
+        //        }
+        //        AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+        //        return Response.Failure(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
+        //    }
+        //}
+        //protected async Task<Response> TryExecuteAsync(Func<Task<Response>> func, string operationName, Dictionary<string, object>? properties = null)
+        //{
+        //    using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
 
-            try
-            {
-                return await func.Invoke();
-            }
-            catch (Exception e)
-            {
-                if (e.IsErrorException())
-                {
-                    return AnalyticsService.TraceErrorResponse(this, e.ToError());
-                }
-                AnalyticsService.LogException(this, e, properties);
-                return Response.Failure(Error.Unexpected($"{operationName} failed to complete"));
-            }
-        }
+        //    try
+        //    {
+        //        return await func.Invoke();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        if (e.IsErrorException())
+        //        {
+        //            return AnalyticsService.TraceErrorResponse(this, e.ToError());
+        //        }
+        //        AnalyticsService.LogException(this, e, properties);
+        //        return Response.Failure(Error.Unexpected($"{operationName} failed to complete"));
+        //    }
+        //}
         
-        protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response<TResponse>>> func)
-        {
-            using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
+        //protected async Task<Response<TResponse>> TryExecuteCommandAsync<TResponse, TCommand>(TCommand command, IAuthenticatedUser user, Func<Task<Response<TResponse>>> func)
+        //{
+        //    using var _ = AnalyticsService.StartTrace(this, $"{typeof(TCommand)} executed by {GetType().Name}", LogSeverity.Verbose, command.ToObjectDictionary());
 
-            try
-            {
-                if (command is IAdminCommand)
-                {
-                    if (!user.IsAdminUser())
-                    {
-                        return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
-                    }
-                }
-                return await func.Invoke();
-            }
-            catch (Exception e)
-            {
-                if (e.IsErrorException())
-                {
-                    return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
-                }
-                AnalyticsService.LogException(this, e, command.ToObjectDictionary());
-                return Response.Failure<TResponse>(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
-            }
-        }
-        protected async Task<Response<T>> TryExecuteAsync<T>(Func<Task<Response<T>>> func, string operationName, Dictionary<string, object>? properties = null)
-        {
-            using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
+        //    try
+        //    {
+        //        if (command is IAdminCommand)
+        //        {
+        //            if (!user.IsAdminUser())
+        //            {
+        //                return AnalyticsService.TraceErrorResponse<TResponse>(this, AuthError.NotAuthorized);
+        //            }
+        //        }
+        //        return await func.Invoke();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        if (e.IsErrorException())
+        //        {
+        //            return AnalyticsService.TraceErrorResponse<TResponse>(this, e.ToError());
+        //        }
+        //        AnalyticsService.LogException(this, e, command.ToObjectDictionary());
+        //        return Response.Failure<TResponse>(Error.Unexpected($"{typeof(TCommand)} failed to complete"));
+        //    }
+        //}
+        //protected async Task<Response<T>> TryExecuteAsync<T>(Func<Task<Response<T>>> func, string operationName, Dictionary<string, object>? properties = null)
+        //{
+        //    using var _ = AnalyticsService.StartTrace(this, $"{operationName} executed by {GetType().Name}", LogSeverity.Verbose, properties);
 
-            try
-            {
-                return await func.Invoke();
-            }
-            catch (Exception e)
-            {
-                if (e.IsErrorException())
-                {
-                    return AnalyticsService.TraceErrorResponse<T>(this, e.ToError());
-                }
-                AnalyticsService.LogException(this, e, properties);
-                return Response.Failure<T>(Error.Unexpected($"{operationName} failed to complete"));
-            }
-        }
+        //    try
+        //    {
+        //        return await func.Invoke();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        if (e.IsErrorException())
+        //        {
+        //            return AnalyticsService.TraceErrorResponse<T>(this, e.ToError());
+        //        }
+        //        AnalyticsService.LogException(this, e, properties);
+        //        return Response.Failure<T>(Error.Unexpected($"{operationName} failed to complete"));
+        //    }
+        //}
     }
 }

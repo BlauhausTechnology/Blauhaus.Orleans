@@ -3,84 +3,44 @@ using System;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Orleans;
 using System.Threading.Tasks;
+using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
-    public abstract class BaseResolverGrain<TGrainResolver> : Grain
+    public abstract class BaseResolverGrain<TGrain, TGrainResolver> : BaseGrain<TGrain>
+        where TGrain:BaseResolverGrain<TGrain, TGrainResolver>
         where TGrainResolver : IGrainResolver
     {
         protected readonly TGrainResolver GrainResolver;
         
-        protected BaseResolverGrain(TGrainResolver grainResolver)
+        protected BaseResolverGrain(
+            IAnalyticsLogger<TGrain> logger,
+            TGrainResolver grainResolver) : base(logger)
         {
             GrainResolver = grainResolver;
             GrainResolver.Initialize(()=> GrainFactory);
         }
 
-        protected TGrain ResolveSingleton<TGrain>() where TGrain : IGrainSingleton
+        protected T ResolveSingleton<T>() where T : IGrainSingleton
         {
-            return GrainResolver.ResolveSingleton<TGrain>();
+            return GrainResolver.ResolveSingleton<T>();
         }
-        protected TGrain Resolve<TGrain>(Guid id) where TGrain : IGrainWithGuidKey
+        protected T Resolve<T>(Guid id) where T : IGrainWithGuidKey
         {
-            return GrainResolver.Resolve<TGrain>(id);
+            return GrainResolver.Resolve<T>(id);
         }
-        protected TGrain Resolve<TGrain>(string id) where TGrain : IGrainWithStringKey
+        protected T Resolve<T>(string id) where T : IGrainWithStringKey
         {
-            return GrainResolver.Resolve<TGrain>(id);
+            return GrainResolver.Resolve<T>(id);
         }
-        protected TGrain Resolve<TGrain>(long id) where TGrain : IGrainWithIntegerKey
+        protected T Resolve<T>(long id) where T : IGrainWithIntegerKey
         {
-            return GrainResolver.Resolve<TGrain>(id);
+            return GrainResolver.Resolve<T>(id);
         } 
 
-        protected async Task PublishToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, T t)
-        {
-            var streamProvider = GetStreamProvider(streamName);
-            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
-            await stream.OnNextAsync(t);
-        }
-
-        protected async Task SubscribeToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, Func<T, Task> handler)
-        {
-            var streamProvider = GetStreamProvider(streamName);
-            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
-
-            var existingHandles = await stream.GetAllSubscriptionHandles();
-            
-            if (existingHandles.Count == 0)
-            {
-                await stream.SubscribeAsync(async (t, token) =>
-                {
-                    await handler.Invoke(t);
-                });
-            }
-            else
-            {
-                foreach (var streamSubscriptionHandle in existingHandles)
-                {
-                    await streamSubscriptionHandle.ResumeAsync(async (t, token) =>
-                    { 
-                        await handler.Invoke(t);
-                    });
-                }
-            }
-        }
-
-        protected async Task UnsubscribeFromStreamAsync<T>(string streamName, Guid streamId, string? streamEventName = null)
-        {
-            var streamProvider = GetStreamProvider(streamName);
-            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
-
-            var existingHandles = await stream.GetAllSubscriptionHandles();
-
-            foreach (var streamSubscriptionHandle in existingHandles)
-            {
-                await streamSubscriptionHandle.UnsubscribeAsync();
-            }
-        }
+        
 
     }
 }

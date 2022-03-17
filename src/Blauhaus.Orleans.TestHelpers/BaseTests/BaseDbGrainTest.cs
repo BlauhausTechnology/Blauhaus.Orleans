@@ -13,8 +13,8 @@ using Orleans;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
      
-    public abstract class BaseDbGrainTest<TSut, TDbContext, TId, TGrainResolver> : BaseGrainTest<TSut, TId> 
-        where TSut : BaseDbGrain<TDbContext, TGrainResolver>
+    public abstract class BaseDbGrainTest<TGrain, TDbContext, TId, TGrainResolver> : BaseGrainTest<TGrain, TId> 
+        where TGrain : BaseDbGrain<TGrain, TDbContext, TGrainResolver>
         where TDbContext : DbContext
         where TGrainResolver : IGrainResolver
     {
@@ -92,7 +92,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
         }
          
        
-        protected sealed override TSut ConstructSut()
+        protected sealed override TGrain ConstructSut()
         {
             foreach (var setupFunc in _entityFactories)
             {

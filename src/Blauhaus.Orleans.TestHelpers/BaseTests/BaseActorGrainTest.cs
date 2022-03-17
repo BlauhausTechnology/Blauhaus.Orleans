@@ -13,7 +13,7 @@ using Blauhaus.Orleans.Resolver;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
     public class BaseActorGrainTest<TGrain, TModel, TModelBuilder, TActor, TActorMockBuilder, TDto, TDtoBuilder> : BaseActorGrainTest<TGrain, IGrainResolver, GrainResolverMockBuilder , TModel, TModelBuilder, TActor, TActorMockBuilder, TDto, TDtoBuilder>
-        where TGrain : BaseActorGrain<IGrainResolver, TActor, TModel, TDto>
+        where TGrain : BaseActorGrain<TGrain, IGrainResolver, TActor, TModel, TDto>
         where TActor : class, IDtoModelActor<TModel, TDto, Guid>
         where TModel : class, IHasId<Guid>
         where TActorMockBuilder : BaseMockBuilder<TActorMockBuilder, TActor>, new()
@@ -25,7 +25,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
     }
     public class BaseActorGrainTest<TGrain, TGrainResolver, TGrainResolverMockBuilder , TModel, TModelBuilder, TActor, TActorMockBuilder, TDto, TDtoBuilder> 
         : BaseGuidGrainTest<TGrain> 
-        where TGrain : BaseActorGrain<TGrainResolver, TActor, TModel, TDto>
+        where TGrain : BaseActorGrain<TGrain, TGrainResolver, TActor, TModel, TDto>
         where TActor : class, IDtoModelActor<TModel, TDto, Guid>
         where TModel : class, IHasId<Guid>
         where TActorMockBuilder : BaseMockBuilder<TActorMockBuilder, TActor>, new()

@@ -21,7 +21,7 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 namespace Blauhaus.Orleans.TestHelpers.BaseEntityGrainTests
 {
     public abstract class BaseEntityGrainActivateTests<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver, TDto> : BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver>
-        where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IVoidAuthenticatedCommandHandler<ActivateCommand, IAuthenticatedUser> 
+        where TGrain: BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver>, IVoidAuthenticatedCommandHandler<ActivateCommand, IAuthenticatedUser>
         where TEntity : BaseServerEntity, IDtoOwner<TDto>
         where TEntityBuilder : BaseServerEntityBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext

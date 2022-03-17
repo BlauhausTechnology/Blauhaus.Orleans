@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Blauhaus.Orleans.TestHelpers.BaseTests
 {
     public abstract class BaseEntityGrainTest<TDbContext, TGrain, TEntity, TEntityBuilder, TGrainResolver> : BaseDbGrainTest<TGrain, TDbContext, Guid, TGrainResolver>
-        where TGrain: BaseEntityGrain<TDbContext, TEntity, TGrainResolver> 
+        where TGrain: BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver> 
         where TEntity : BaseServerEntity
         where TEntityBuilder : BaseServerEntityBuilder<TEntityBuilder, TEntity>
         where TDbContext : DbContext

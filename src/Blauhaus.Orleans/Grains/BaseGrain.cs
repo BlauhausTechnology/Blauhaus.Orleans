@@ -1,16 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Orleans.Abstractions.Streams;
 using Orleans;
 using Orleans.Streams;
 
 namespace Blauhaus.Orleans.Grains
 {
-    [Obsolete("Use resolver grain")]
-    public abstract class BaseGrain : Grain
+    public abstract class BaseGrain<TGrain> : Grain 
+        where TGrain : BaseGrain<TGrain>
     {
-        protected TGrain GetGrain<TGrain>(Guid id) where TGrain : IGrainWithGuidKey => GrainFactory.GetGrain<TGrain>(id);
-        protected TGrain GetGrain<TGrain>(string id) where TGrain : IGrainWithStringKey => GrainFactory.GetGrain<TGrain>(id);
+        protected readonly IAnalyticsLogger<TGrain> Logger;
+
+        protected BaseGrain(IAnalyticsLogger<TGrain> logger)
+        {
+            Logger = logger;
+        }
+
+        protected T GetGrain<T>(Guid id) where T : IGrainWithGuidKey => GrainFactory.GetGrain<T>(id);
+        protected T GetGrain<T>(string id) where T : IGrainWithStringKey => GrainFactory.GetGrain<T>(id);
         
         protected IGrain GetGrain(Type grainInterfaceType, Guid id) => GrainFactory.GetGrain(grainInterfaceType, id);
         protected IGrain GetGrain(Type grainInterfaceType, string id) => GrainFactory.GetGrain(grainInterfaceType, id);
@@ -34,33 +42,18 @@ namespace Blauhaus.Orleans.Grains
         }
         
         
-        protected async Task SubscribeAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler)
+      protected async Task PublishToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, T t)
         {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
-            var existingHandles = await stream.GetAllSubscriptionHandles();
-            
-            if (existingHandles.Count == 0)
-            {
-                await stream.SubscribeAsync(async (t, token) =>
-                {
-                    await handler.Invoke(t);
-                });
-            }
-            else
-            {
-                foreach (var streamSubscriptionHandle in existingHandles)
-                {
-                    await streamSubscriptionHandle.ResumeAsync(async (t, token) =>
-                    { 
-                        await handler.Invoke(t);
-                    });
-                }
-            }
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
+            await stream.OnNextAsync(t);
         }
-        
-        protected async Task SubscribeAsync<T>(Guid streamId, string streamEventName, Func<T, Task> handler, T initialValue)
+
+        protected async Task SubscribeToStreamAsync<T>(string streamName, Guid streamId, string? streamEventName, Func<T, Task> handler)
         {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
+
             var existingHandles = await stream.GetAllSubscriptionHandles();
             
             if (existingHandles.Count == 0)
@@ -69,7 +62,6 @@ namespace Blauhaus.Orleans.Grains
                 {
                     await handler.Invoke(t);
                 });
-                await handler.Invoke(initialValue);
             }
             else
             {
@@ -83,11 +75,13 @@ namespace Blauhaus.Orleans.Grains
             }
         }
 
-        protected async Task UnsubscribeTransientAsync<T>(Guid streamId, string streamEventName)
+        protected async Task UnsubscribeFromStreamAsync<T>(string streamName, Guid streamId, string? streamEventName = null)
         {
-            var stream = GetTransientStream<T>(streamId, streamEventName);
+            var streamProvider = GetStreamProvider(streamName);
+            var stream = streamProvider.GetStream<T>(streamId, streamEventName);
+
             var existingHandles = await stream.GetAllSubscriptionHandles();
-            
+
             foreach (var streamSubscriptionHandle in existingHandles)
             {
                 await streamSubscriptionHandle.UnsubscribeAsync();

@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Blauhaus.Analytics.Abstractions;
+using Blauhaus.Analytics.Abstractions.Extensions;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Auth.Abstractions.Errors;
 using Blauhaus.Auth.Abstractions.Extensions;
@@ -11,6 +13,8 @@ using Blauhaus.Domain.Abstractions.DtoHandlers;
 using Blauhaus.Domain.Abstractions.Entities;
 using Blauhaus.Domain.Abstractions.Errors;
 using Blauhaus.Domain.Server.Entities;
+using Blauhaus.Errors;
+using Blauhaus.Orleans.Abstractions.Errors;
 using Blauhaus.Orleans.Abstractions.Handlers;
 using Blauhaus.Orleans.Abstractions.Resolver;
 using Blauhaus.Orleans.Resolver;
@@ -22,19 +26,20 @@ using EntityState = Blauhaus.Domain.Abstractions.Entities.EntityState;
 
 namespace Blauhaus.Orleans.EfCore.Grains
 {
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
+    public abstract class BaseEntityGrain<TGrain, TDbContext, TEntity, TDto, TGrainResolver> : BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver>, IDtoOwner<TDto>
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity
         where TDto : IClientEntity<Guid>
         where TGrainResolver : IGrainResolver
+        where TGrain : BaseEntityGrain<TGrain, TDbContext, TEntity, TDto, TGrainResolver>
     {
-        
+
         protected BaseEntityGrain(
-            Func<TDbContext> dbContextFactory, 
-            IAnalyticsService analyticsService, 
+            IAnalyticsLogger<TGrain> logger,
+            Func<TDbContext> dbContextFactory,
             ITimeService timeService,
-            TGrainResolver grainResolver) 
-                : base(dbContextFactory, analyticsService, timeService, grainResolver)
+            TGrainResolver grainResolver)
+                : base(logger, dbContextFactory, timeService, grainResolver)
         {
         } 
         
@@ -51,7 +56,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
             catch (Exception e)
             {
-                AnalyticsService.LogException(this, e);
+                Logger.LogError(Error.Unexpected(), e);
                 throw;
             }
         }
@@ -61,10 +66,11 @@ namespace Blauhaus.Orleans.EfCore.Grains
     }
     
     
-    public abstract class BaseEntityGrain<TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TDbContext, TGrainResolver>, IGrainWithGuidKey
+    public abstract class BaseEntityGrain<TGrain, TDbContext, TEntity, TGrainResolver> : BaseDbGrain<TGrain, TDbContext, TGrainResolver>, IGrainWithGuidKey
         where TDbContext : DbContext 
         where TEntity : BaseServerEntity
         where TGrainResolver : IGrainResolver
+        where TGrain : BaseDbGrain<TGrain, TDbContext, TGrainResolver>
     {
         protected TEntity? Entity;
 
@@ -84,11 +90,11 @@ namespace Blauhaus.Orleans.EfCore.Grains
         protected Guid Id;
         
         protected BaseEntityGrain(
+            IAnalyticsLogger<TGrain> logger,
             Func<TDbContext> dbContextFactory, 
-            IAnalyticsService analyticsService, 
             ITimeService timeService,
             TGrainResolver grainResolver) 
-                : base(dbContextFactory, analyticsService, timeService, grainResolver)
+                : base(dbContextFactory, logger, timeService, grainResolver)
         {
         }
          
@@ -114,7 +120,7 @@ namespace Blauhaus.Orleans.EfCore.Grains
             }
             catch (Exception e)
             {
-                AnalyticsService.LogException(this, e);
+                Logger.LogError(GrainError.ActivationFailed, e);
                 throw;
             }
         }
@@ -144,62 +150,62 @@ namespace Blauhaus.Orleans.EfCore.Grains
             return Task.CompletedTask;
         }
         
-        public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
-            { 
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
-                {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
-                }
+        //public async Task<Response> HandleAsync(ActivateCommand command, IAuthenticatedUser user)
+        //{
+        //    return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+        //    { 
+        //        var currentEntityState = LoadedEntity.EntityState;
+        //        if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
+        //        {
+        //            return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+        //        }
 
-                db.Attach(LoadedEntity);
-                LoadedEntity.Activate(now);
+        //        db.Attach(LoadedEntity);
+        //        LoadedEntity.Activate(now);
                 
-                return await HandleActivatedAsync(LoadedEntity);
-            });
-        }
+        //        return await HandleActivatedAsync(LoadedEntity);
+        //    });
+        //}
 
-        protected virtual Task<Response> HandleActivatedAsync(TEntity loadedEntity) => Response.SuccessTask();
+        //protected virtual Task<Response> HandleActivatedAsync(TEntity loadedEntity) => Response.SuccessTask();
 
-        public async Task<Response> HandleAsync(ArchiveCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
-            { 
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not EntityState.Active)
-                {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
-                }
+        //public async Task<Response> HandleAsync(ArchiveCommand command, IAuthenticatedUser user)
+        //{
+        //    return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+        //    { 
+        //        var currentEntityState = LoadedEntity.EntityState;
+        //        if (currentEntityState is not EntityState.Active)
+        //        {
+        //            return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+        //        }
 
-                db.Attach(LoadedEntity);
-                LoadedEntity.Archive(now);
+        //        db.Attach(LoadedEntity);
+        //        LoadedEntity.Archive(now);
 
-                return await HandleArchivedAsync(LoadedEntity);
+        //        return await HandleArchivedAsync(LoadedEntity);
 
-            });
-        }
+        //    });
+        //}
 
-        protected virtual Task<Response> HandleArchivedAsync(TEntity entity) => Response.SuccessTask();
+        //protected virtual Task<Response> HandleArchivedAsync(TEntity entity) => Response.SuccessTask();
 
-        public async Task<Response> HandleAsync(DeleteCommand command, IAuthenticatedUser user)
-        {
-            return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
-            { 
-                var currentEntityState = LoadedEntity.EntityState;
-                if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
-                {
-                    return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
-                }
+        //public async Task<Response> HandleAsync(DeleteCommand command, IAuthenticatedUser user)
+        //{
+        //    return await TryExecuteDbCommandAsync(command, user, async (db, now) =>
+        //    { 
+        //        var currentEntityState = LoadedEntity.EntityState;
+        //        if (currentEntityState is not (EntityState.Draft or EntityState.Archived))
+        //        {
+        //            return TraceError(DomainErrors.InvalidEntityState(currentEntityState));
+        //        }
 
-                db.Attach(LoadedEntity);
-                LoadedEntity.Delete(now);
+        //        db.Attach(LoadedEntity);
+        //        LoadedEntity.Delete(now);
                 
-                return await HandleDeletedAsync(LoadedEntity); 
-            });
-        }
-        protected virtual Task<Response> HandleDeletedAsync(TEntity entity) => Response.SuccessTask();
+        //        return await HandleDeletedAsync(LoadedEntity); 
+        //    });
+        //}
+        //protected virtual Task<Response> HandleDeletedAsync(TEntity entity) => Response.SuccessTask();
         
 
          

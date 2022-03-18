@@ -46,7 +46,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseEntityGrainTests
             var result = await Sut.HandleAsync(Command, User);
 
             //Assert
-            result.VerifyResponseError(AuthError.NotAuthorized, MockAnalyticsService);
+            MockLogger.VerifyLogErrorResponse(AuthError.NotAuthorized, result); 
             Assert.That(DbContextAfter.Set<TEntity>().First(x => x.Id == GrainId).EntityState, Is.Not.EqualTo(EntityState.Draft));
         }
           
@@ -61,7 +61,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseEntityGrainTests
             var result = await Sut.HandleAsync(Command, AdminUser);
 
             //Assert
-            result.VerifyResponseError(DomainErrors.InvalidEntityState(invalidState), MockAnalyticsService);
+            MockLogger.VerifyLogErrorResponse(DomainErrors.InvalidEntityState(invalidState), result); 
         }
 
         [TestCase(EntityState.Draft)]

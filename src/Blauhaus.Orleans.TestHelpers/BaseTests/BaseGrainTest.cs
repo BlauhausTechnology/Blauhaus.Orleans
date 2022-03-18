@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Blauhaus.Analytics.Abstractions;
 using Blauhaus.Analytics.Abstractions.Service;
 using Blauhaus.Analytics.TestHelpers.MockBuilders;
 using Blauhaus.Auth.Abstractions.User;
@@ -47,12 +48,12 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
 
             //Infrastructure
             AddSiloService(MockTimeService.Object);
-            AddSiloService(MockAnalyticsService.Object);
+            AddSiloService(MockLogger.Object);
         }
           
 
         protected TimeServiceMockBuilder MockTimeService => AddMock<TimeServiceMockBuilder, ITimeService>().Invoke();
-        protected AnalyticsServiceMockBuilder MockAnalyticsService => AddMock<AnalyticsServiceMockBuilder, IAnalyticsService>().Invoke();
+        protected AnalyticsLoggerMockBuilder<TSut> MockLogger => AddMock<AnalyticsLoggerMockBuilder<TSut>, IAnalyticsLogger<TSut>>().Invoke();
 
         protected override TSut ConstructSut()
         {

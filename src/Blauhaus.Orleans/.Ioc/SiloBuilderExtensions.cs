@@ -74,25 +74,20 @@ namespace Blauhaus.Orleans.Ioc
         
         public static ISiloBuilder ConfigureClustering(this ISiloBuilder siloBuilder, IConfiguration configuration, string clusterName)
         {
-            
             var connectionString = configuration.GetConnectionString("AzureStorage");
             var buildConfig = configuration.ExtractBuildConfig();
-
+            var tableName = clusterName.Replace("-", "");
+        
             siloBuilder.UseAzureStorageClustering(options =>
             {
                 options.ConfigureTableServiceClient(connectionString);
-                options.TableName = clusterName + "ClusterInfo";
+                options.TableName = tableName;
             });
              
             if (buildConfig.Equals(BuildConfig.Debug))
             {
                 siloBuilder.ConfigureEndpoints(Dns.GetHostName(), 11111, 30000);
                 siloBuilder.Configure<ClusterMembershipOptions>(x => x.ValidateInitialConnectivity = false);
-                siloBuilder.Configure<ClusterOptions>(options =>
-                {
-                    options.ServiceId = $"{clusterName}Service";
-                    options.ClusterId = $"{clusterName}Cluster";
-                });
             }
             else
             {

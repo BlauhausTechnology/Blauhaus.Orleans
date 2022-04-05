@@ -88,6 +88,11 @@ namespace Blauhaus.Orleans.Ioc
             {
                 siloBuilder.ConfigureEndpoints(Dns.GetHostName(), 11111, 30000);
                 siloBuilder.Configure<ClusterMembershipOptions>(x => x.ValidateInitialConnectivity = false);
+                siloBuilder.Configure<ClusterOptions>(options =>
+                {
+                    options.ServiceId = tableName;
+                    options.ClusterId = tableName;
+                });
             }
             else
             {

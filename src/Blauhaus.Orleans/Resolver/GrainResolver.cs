@@ -62,7 +62,7 @@ namespace Blauhaus.Orleans.Resolver
             _grainFactory = initializer;
         }
 
-        private IGrainFactory GetGrainFactory()
+        protected IGrainFactory GetGrainFactory()
         {
             if (_grainFactory == null)
             {

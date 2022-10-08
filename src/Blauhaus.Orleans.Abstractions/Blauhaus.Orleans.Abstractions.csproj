@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.8.46" />
-    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.16.3" />
-    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="1.8.12" />
-    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.14.4" />
+    <PackageReference Include="Blauhaus.Analytics.Abstractions" Version="1.9.11" />
+    <PackageReference Include="Blauhaus.Auth.Abstractions" Version="0.17.0" />
+    <PackageReference Include="Blauhaus.Domain.Abstractions" Version="1.8.15" />
+    <PackageReference Include="Blauhaus.SignalR.Server" Version="0.14.13" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.6.5" />
   </ItemGroup>
 

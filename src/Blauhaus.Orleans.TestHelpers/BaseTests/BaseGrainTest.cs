@@ -44,7 +44,7 @@ namespace Blauhaus.Orleans.TestHelpers.BaseTests
             Silo = new TestKitSilo();
 
             MockUser = new ConnectedUserMockBuilder();
-            MockAdminUser = new AuthenticatedUserMockBuilder().With_Claim(new UserClaim("Role", "Admin"));
+            MockAdminUser = new AuthenticatedUserMockBuilder().With_Claim("Role", "Admin");
 
             //Infrastructure
             AddSiloService(MockTimeService.Object);
